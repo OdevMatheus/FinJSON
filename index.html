@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceHub - Inicialização de Banco de Dados</title>
+    <!-- Google Fonts for modern typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-fullscreen-container">
+        
+        <!-- Onboarding Screen (Strictly the only screen in the system for now) -->
+        <div id="onboarding-view" class="onboarding-card">
+            <div class="onboarding-header">
+                <!-- Inline SVG Logo: Briefcase -->
+                <span class="onboarding-brand-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-briefcase"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </span>
+                <h2>Bem-vindo ao FinanceHub Pro</h2>
+                <p>Sua carteira financeira local, 100% privada e portátil.</p>
+            </div>
+            
+            <div class="onboarding-body">
+                <p class="onboarding-intro">
+                    Para começarmos, selecione se deseja iniciar uma nova carteira de dados limpa ou carregar um arquivo JSON de backup existente:
+                </p>
+                
+                <div class="onboarding-options-grid">
+                    <!-- Option 1: Initialize fresh database -->
+                    <div class="onboarding-option-card">
+                        <div class="option-icon">
+                            <!-- Inline SVG: Sprout -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M10 20c5.5-2.5 8-6.4 8-12a4 4 0 0 0-8 0c0 5.6 2.5 9.5 8 12Z"/><path d="M14 20v-4"/></svg>
+                        </div>
+                        <h3>Iniciar do Zero</h3>
+                        <p>Cria um banco de dados local zerado, pré-configurado com categorias financeiras essenciais para uso imediato.</p>
+                        <button id="btn-init-blank" class="btn btn-primary" style="margin-top: auto;">Criar Novo Banco</button>
+                    </div>
+
+                    <!-- Option 2: Import existing backup -->
+                    <div class="onboarding-option-card">
+                        <div class="option-icon">
+                            <!-- Inline SVG: Folder Open -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H18a2 2 0 0 1 2 2v2"/></svg>
+                        </div>
+                        <h3>Importar Backup</h3>
+                        <p>Selecione um arquivo de dados <code>db.json</code> exportado anteriormente em qualquer máquina para restaurar seu histórico.</p>
+                        
+                        <div class="import-upload-area" id="import-drop-zone">
+                            <input type="file" id="import-file-input" accept=".json" style="display: none;">
+                            <button id="btn-trigger-upload" class="btn btn-secondary">Selecionar Arquivo .json</button>
+                            <span id="selected-file-name" class="file-name-text">Nenhum arquivo selecionado</span>
+                        </div>
+                        
+                        <button id="btn-submit-import" class="btn btn-primary" style="margin-top: 14px; display: none;">
+                            Confirmar e Restaurar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Pure ESM script module entrypoint -->
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

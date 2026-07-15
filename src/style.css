@@ -1,0 +1,249 @@
+/* High-Standard Dark Theme - Onboarding Only */
+:root {
+    --primary-color: #6366f1; /* Indigo */
+    --primary-hover: #4f46e5;
+    --primary-light: rgba(99, 102, 241, 0.12);
+    --secondary-color: #0ea5e9; /* Sky Cyan */
+    --secondary-hover: #0284c7;
+    --secondary-light: rgba(14, 165, 233, 0.12);
+    
+    --bg-app: #090d16; /* Deep dark slate-midnight */
+    --bg-card: #111827; /* Rich slate-900 */
+    --bg-input: #1f2937; /* Slate-800 */
+    --border-color: rgba(255, 255, 255, 0.06); /* Ultra-thin glowing borders */
+    
+    --text-main: #f3f4f6; /* Off-white slate-100 */
+    --text-muted: #9ca3af; /* Slate-400 (Sufficient 4.5:1 contrast) */
+    --text-white: #ffffff;
+    
+    --success: #10b981; /* Emerald */
+    --success-light: rgba(16, 185, 129, 0.12);
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+    
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    
+    --transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Fullscreen Center Container */
+.app-fullscreen-container {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: radial-gradient(circle at 50% 50%, #111827 0%, #090d16 100%);
+}
+
+/* Onboarding Card container */
+.onboarding-card {
+    background-color: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 760px;
+    animation: scale-up 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes scale-up {
+    0% { transform: scale(0.96); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.onboarding-header {
+    background: linear-gradient(135deg, #4f46e5 0%, #1e1b4b 100%);
+    padding: 40px 32px;
+    text-align: center;
+    color: var(--text-white);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.onboarding-brand-icon {
+    color: var(--primary-color);
+    background-color: rgba(255, 255, 255, 0.08);
+    padding: 14px;
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.onboarding-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.onboarding-header p {
+    font-size: 14px;
+    color: #c7d2fe; /* Light indigo */
+}
+
+.onboarding-body {
+    padding: 32px;
+    background-color: var(--bg-card);
+}
+
+.onboarding-intro {
+    font-size: 14px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 32px;
+    line-height: 1.6;
+}
+
+.onboarding-options-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+}
+
+@media (min-width: 640px) {
+    .onboarding-options-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.onboarding-option-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 28px;
+    background-color: rgba(255, 255, 255, 0.01);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+    transition: var(--transition-base);
+}
+
+.onboarding-option-card:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(255, 255, 255, 0.02);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.option-icon {
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+    padding: 12px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.onboarding-option-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.onboarding-option-card p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* File Upload drag and drop zone */
+.import-upload-area {
+    width: 100%;
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    background-color: var(--bg-input);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    transition: var(--transition-base);
+    margin-top: auto;
+    cursor: pointer;
+}
+
+.import-upload-area:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(255,255,255,0.01);
+}
+
+.file-name-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    word-break: break-all;
+    max-width: 100%;
+}
+
+/* Button UI Rules */
+.btn {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 12px 20px;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-base);
+    text-align: center;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    outline: none;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--text-white);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: var(--text-white);
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-hover);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
