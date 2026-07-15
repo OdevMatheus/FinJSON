@@ -421,14 +421,45 @@ export const LocalStore = {
 
     const { description, amount, type, category_id, date, payment_method, credit_card_id, notes } = txData;
 
-    const id = `tx-${crypto.randomUUID()}`;
+    // Strict Validations
+    if (!description || amount === undefined || !type || !category_id || !date || !payment_method) {
+      throw new Error('Todos os campos obrigatórios (description, amount, type, category_id, date, payment_method) devem ser fornecidos.');
+    }
+
     const normalizedType = type.toLowerCase();
+    if (normalizedType !== 'income' && normalizedType !== 'expense') {
+      throw new Error("O tipo de transação deve ser 'income' ou 'expense'.");
+    }
+
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      throw new Error('O valor da transação deve ser um número positivo maior que zero.');
+    }
+
+    // Category check
+    const category = dbData.categories.find(c => c.id === category_id);
+    if (!category) {
+      throw new Error('A categoria fornecida não existe.');
+    }
+
+    // Card check
+    if (payment_method === 'credit_card') {
+      if (!credit_card_id) {
+        throw new Error('Um cartão de crédito deve ser fornecido para compras no crédito.');
+      }
+      const card = dbData.credit_cards.find(c => c.id === credit_card_id);
+      if (!card) {
+        throw new Error('O cartão de crédito fornecido não existe.');
+      }
+    }
+
+    const id = `tx-${crypto.randomUUID()}`;
 
     const tx = {
       id,
       date,
       description: description.trim(),
-      amount: parseFloat(parseFloat(amount).toFixed(2)),
+      amount: parseFloat(parsedAmount.toFixed(2)),
       type: normalizedType,
       category_id,
       payment_method,
@@ -474,6 +505,41 @@ export const LocalStore = {
     const previousDate = existing.date;
     const previousMethod = existing.payment_method;
     const previousCardId = existing.credit_card_id;
+
+    // Merge for validations
+    const merged = { ...existing, ...updatedFields };
+
+    // Validations
+    if (updatedFields.type) {
+      const normalizedType = updatedFields.type.toLowerCase();
+      if (normalizedType !== 'income' && normalizedType !== 'expense') {
+        throw new Error("O tipo de transação deve ser 'income' ou 'expense'.");
+      }
+    }
+
+    if (updatedFields.amount !== undefined) {
+      const parsedAmount = parseFloat(updatedFields.amount);
+      if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        throw new Error('O valor da transação deve ser um número positivo.');
+      }
+    }
+
+    if (updatedFields.category_id) {
+      const category = dbData.categories.find(c => c.id === updatedFields.category_id);
+      if (!category) {
+        throw new Error('A categoria fornecida não existe.');
+      }
+    }
+
+    if (merged.payment_method === 'credit_card') {
+      if (!merged.credit_card_id) {
+        throw new Error('Um cartão de crédito deve ser fornecido para compras no crédito.');
+      }
+      const card = dbData.credit_cards.find(c => c.id === merged.credit_card_id);
+      if (!card) {
+        throw new Error('O cartão de crédito fornecido não existe.');
+      }
+    }
 
     const updated = {
       ...existing,

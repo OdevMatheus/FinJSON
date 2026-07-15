@@ -1,14 +1,16 @@
 {
-  "name": "frontend",
-  "version": "0.0.0",
+  "name": "financehub",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run"
   },
   "devDependencies": {
-    "vite": "^8.1.1"
+    "vite": "^8.1.1",
+    "vitest": "^2.1.8"
   }
 }
