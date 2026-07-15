@@ -392,7 +392,8 @@ body {
    ========================================================================== */
 .dashboard-container,
 .invoice-container,
-.reserves-container {
+.reserves-container,
+.recurring-container {
     max-width: 1200px;
     width: 100%;
     margin: 24px auto;
