@@ -677,13 +677,29 @@ function createDashboardView() {
 
   leftCol.innerHTML = `
     <div class="card-section">
-        <div class="card-section-header">
+        <div class="card-section-header" style="margin-bottom: 16px;">
             <h3>Lançamentos do Mês</h3>
             <button id="btn-add-tx" class="btn-section-action">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>
                 Novo Lançamento
             </button>
         </div>
+
+        <!-- Live Search and Flow-Type Filter Row -->
+        <div class="table-search-row" style="margin-bottom: 16px; display: flex; gap: 12px; align-items: center; position: relative; width: 100%;">
+            <div style="position: relative; flex: 1; display: flex; align-items: center;">
+                <span style="position: absolute; left: 12px; color: var(--text-muted); display: flex; align-items: center; pointer-events: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </span>
+                <input type="text" id="tx-search-input" placeholder="Buscar por descrição, obs, categoria..." style="width: 100%; padding: 10px 12px 10px 36px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-main); font-size: 13px; outline: none; transition: var(--transition-base);">
+            </div>
+            <select id="tx-type-filter" style="width: 140px; padding: 10px 12px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-main); font-size: 13px; outline: none; cursor: pointer; transition: var(--transition-base);">
+                <option value="all">Todos os Fluxos</option>
+                <option value="expense">Apenas Despesas</option>
+                <option value="income">Apenas Receitas</option>
+            </select>
+        </div>
+
         <div class="table-container">
             <table class="tx-table">
                 <thead>
@@ -737,6 +753,62 @@ function createDashboardView() {
       transactionToEditId = null;
       goTo('transaction-form');
     });
+  }
+
+  // Bind Live Search & Filter Logic
+  const searchInput = leftCol.querySelector('#tx-search-input');
+  const typeFilter = leftCol.querySelector('#tx-type-filter');
+  const tableBody = leftCol.querySelector('.tx-table tbody');
+  
+  if (searchInput && typeFilter && tableBody) {
+    const rows = tableBody.querySelectorAll('.tx-row');
+    
+    // Create and append "no results" row placeholder
+    const noResultsRow = document.createElement('tr');
+    noResultsRow.id = 'no-search-results';
+    noResultsRow.style.display = 'none';
+    noResultsRow.innerHTML = `
+      <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px 0;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="empty-icon" style="color: var(--border-color); margin-bottom: 8px; display: block; margin: 0 auto 8px auto;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <p style="font-size: 13px; font-weight: 500;">Nenhum lançamento corresponde à busca.</p>
+      </td>
+    `;
+    tableBody.appendChild(noResultsRow);
+
+    const filterTable = () => {
+      const query = searchInput.value.toLowerCase().trim();
+      const selectedType = typeFilter.value; // 'all' | 'expense' | 'income'
+      let visibleCount = 0;
+
+      rows.forEach(row => {
+        const descTitle = row.querySelector('.tx-desc-title')?.textContent.toLowerCase() || '';
+        const descNote = row.querySelector('.tx-desc-note')?.textContent.toLowerCase() || '';
+        const catName = row.querySelector('.cell-cat')?.textContent.toLowerCase() || '';
+        const methodName = row.querySelector('.cell-method')?.textContent.toLowerCase() || '';
+        
+        const isIncome = row.querySelector('.cell-amount').classList.contains('success-text');
+        const rowType = isIncome ? 'income' : 'expense';
+
+        const matchesSearch = descTitle.includes(query) || descNote.includes(query) || catName.includes(query) || methodName.includes(query);
+        const matchesType = selectedType === 'all' || selectedType === rowType;
+
+        if (matchesSearch && matchesType) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      if (visibleCount === 0 && rows.length > 0) {
+        noResultsRow.style.display = 'table-row';
+      } else {
+        noResultsRow.style.display = 'none';
+      }
+    };
+
+    searchInput.addEventListener('input', filterTable);
+    typeFilter.addEventListener('change', filterTable);
   }
 
   splitView.appendChild(leftCol);
