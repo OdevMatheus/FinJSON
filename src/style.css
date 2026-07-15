@@ -186,6 +186,30 @@ body {
     transform: translateY(-1px);
 }
 
+.btn-reset-header {
+    background: rgba(244, 63, 94, 0.04);
+    border: 1px solid rgba(244, 63, 94, 0.15);
+    color: #fda4af; /* Light rose */
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-reset-header:hover {
+    background-color: var(--danger);
+    border-color: var(--danger);
+    color: var(--text-white);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2);
+}
+
 /* Pulse Dirty Pill Indicator */
 .dirty-pill {
     font-size: 11px;

@@ -17,6 +17,7 @@ const dirtyIndicator = document.getElementById('dirty-indicator');
 const btnExportBackup = document.getElementById('btn-export-backup');
 const btnImportHeader = document.getElementById('btn-import-header');
 const headerFileInput = document.getElementById('header-file-input');
+const btnResetDb = document.getElementById('btn-reset-db');
 
 // Navigation Tabs
 const navDashboard = document.getElementById('nav-dashboard');
@@ -69,6 +70,11 @@ function setupGlobalListeners() {
       headerFileInput.click();
     });
     headerFileInput.addEventListener('change', handleHeaderFileImport);
+  }
+
+  // Reset Local Database Action
+  if (btnResetDb) {
+    btnResetDb.addEventListener('click', handleResetDatabase);
   }
 }
 
@@ -154,6 +160,21 @@ function handleHeaderFileImport() {
   };
 
   reader.readAsText(file);
+}
+
+/**
+ * Triggers a double-confirmation prompt before wiping the localStorage database.
+ */
+function handleResetDatabase() {
+  if (!confirm('ATENÇÃO: Você deseja apagar definitivamente TODOS os seus dados financeiros deste navegador? Esta ação é irreversível e apagará todos os seus lançamentos, categorias e metas.')) return;
+  
+  if (confirm('Você realmente deseja prosseguir com a exclusão? Todo o seu histórico local será perdido permanentemente.')) {
+    localStorage.removeItem('financehub_db');
+    currentDb = null;
+    isUnsavedEdits = false;
+    alert('Banco de dados excluído com sucesso do seu navegador!');
+    goTo('onboarding');
+  }
 }
 
 /**
