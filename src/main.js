@@ -1078,7 +1078,10 @@ function createReservesView() {
       <div class="reserve-meta-card">
           <div class="reserve-meta-header">
               <div>
-                  <h4>${escapeHTML(r.name)}</h4>
+                  <h4 style="display: inline-flex; align-items: center; gap: 8px;">
+                      ${escapeHTML(r.name)}
+                      ${r.ignore_balance ? `<span class="badge-ignored-label" title="Movimentos nesta reserva não alteram seu saldo líquido mensal.">Saldo Isolado</span>` : ''}
+                  </h4>
                   <p>Meta total de ${formatCurrency(goal)}</p>
               </div>
               <div class="reserve-meta-balance info-text">${formatCurrency(balance)}</div>
@@ -1241,6 +1244,10 @@ function triggerCreateReserveModal() {
                     <label for="modal-rsv-goal">Valor Alvo da Meta (R$) *</label>
                     <input type="number" id="modal-rsv-goal" placeholder="Ex: 4000.00" step="0.01" min="1" required autocomplete="off">
                 </div>
+                <div class="form-field-checkbox" style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+                    <input type="checkbox" id="modal-rsv-ignore" style="width: auto; height: 16px; cursor: pointer;">
+                    <label for="modal-rsv-ignore" style="cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-muted); user-select: none;">Ignorar saldo (Não descontar do saldo líquido mensal)</label>
+                </div>
 
                 <div class="form-actions-row" style="margin-top: 18px;">
                     <button type="button" id="btn-modal-close" class="btn btn-secondary" style="background-color: var(--border-color); color: var(--text-main);">Cancelar</button>
@@ -1264,6 +1271,7 @@ function triggerCreateReserveModal() {
     e.preventDefault();
     const rsvName = modalLayer.querySelector('#modal-rsv-name').value;
     const rsvGoal = parseFloat(modalLayer.querySelector('#modal-rsv-goal').value);
+    const ignoreBalance = modalLayer.querySelector('#modal-rsv-ignore').checked;
 
     try {
       const db = LocalStore.exportDatabase();
@@ -1271,6 +1279,7 @@ function triggerCreateReserveModal() {
         id: `rsv-${crypto.randomUUID()}`,
         name: rsvName.trim(),
         goal_amount: rsvGoal,
+        ignore_balance: ignoreBalance,
         movements: []
       };
 

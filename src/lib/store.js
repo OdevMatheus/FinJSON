@@ -110,9 +110,11 @@ function _recalculateMonth(dbData, yearMonth) {
     }
   });
 
-  // 3. Sum up reserves movements saved (deposited minus withdrawn) in this month
+  // 3. Sum up reserves movements saved (deposited minus withdrawn) in this month (ignoring reserves with ignore_balance flag)
   let saved = 0;
   reserves.forEach(res => {
+    if (res.ignore_balance) return; // Skip discounting from liquid balance
+
     const movements = res.movements || [];
     const monthlyMovements = movements.filter(m => m.date.startsWith(yearMonth));
     

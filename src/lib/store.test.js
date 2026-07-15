@@ -338,6 +338,35 @@ describe('LocalStore V3 Database Engine', () => {
         });
       }).toThrow();
     });
+
+    it('should NOT discount from liquid balance if reserve has ignore_balance set to true', () => {
+      const today = new Date().toISOString().split('T')[0];
+      const yyyyMM = today.substring(0, 7);
+
+      // Create a reserve with ignore_balance: true
+      const db = LocalStore.exportDatabase();
+      db.reserves.push({
+        id: 'rsv-ignored',
+        name: 'Reserva Ignorada',
+        goal_amount: 1000,
+        ignore_balance: true,
+        movements: []
+      });
+      localStorage.setItem('financehub_db', JSON.stringify(db));
+
+      // Add a deposit movement to the ignored reserve
+      LocalStore.addReserveMovement('rsv-ignored', {
+        date: today,
+        amount: 300.00,
+        type: 'deposit',
+        note: 'Aporte poupança antiga'
+      });
+
+      // Verify monthly summary saved remains only 200 (from seed), ignoring the 300 deposit
+      const summary = LocalStore.getSummary(yyyyMM);
+      expect(summary.saved).toBe(200.00);
+      expect(summary.balance).toBe(950.00); // 1150 (income) - 0 (expense) - 200 (emergency saved) = 950
+    });
   });
 
   describe('Database Export & Schema Validation', () => {
