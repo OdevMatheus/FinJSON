@@ -32,8 +32,8 @@ describe('LocalStore V3 Database Engine', () => {
       expect(db._metadata.schema_version).toBe(1);
       expect(db._metadata.app_version).toBe('3.0.0');
       expect(db.categories.length).toBe(9);
-      expect(db.credit_cards.length).toBe(1);
-      expect(db.transactions.length).toBe(1); // Standard initial Salary transaction
+      expect(db.credit_cards.length).toBe(0); // Clean sheet
+      expect(db.transactions.length).toBe(0); // Clean sheet
       expect(db.reserves.length).toBe(0);
     });
 
@@ -44,7 +44,7 @@ describe('LocalStore V3 Database Engine', () => {
       const reserves = LocalStore.getReserves();
 
       expect(categories.find(c => c.id === 'cat-alimento')).toBeDefined();
-      expect(cards.find(c => c.id === 'card-nubank')).toBeDefined();
+      expect(cards.length).toBe(0); // Clean sheet
       expect(reserves.length).toBe(0);
     });
   });
@@ -78,10 +78,10 @@ describe('LocalStore V3 Database Engine', () => {
 
       // Check summary was recalculated
       const summary = LocalStore.getSummary(yyyyMM);
-      // Salary (1150) + Bonus (500) = 1650
-      expect(summary.total_income).toBe(1650.00);
-      // Reserves initial deposit is 0, so liquid balance is: 1650 (income) - 0 (expense) - 0 (saved) = 1650
-      expect(summary.balance).toBe(1650.00);
+      // Only Bonus (500) = 500
+      expect(summary.total_income).toBe(500.00);
+      // Reserves initial deposit is 0, so liquid balance is: 500 (income) - 0 (expense) - 0 (saved) = 500
+      expect(summary.balance).toBe(500.00);
     });
 
     it('should add an expense transaction and trigger summary recalculation', () => {
@@ -102,8 +102,8 @@ describe('LocalStore V3 Database Engine', () => {
       // Check summary was recalculated
       const summary = LocalStore.getSummary(yyyyMM);
       expect(summary.total_expenses).toBe(80.00);
-      // 1150 (income) - 80 (expenses) - 0 (saved) = 1070
-      expect(summary.balance).toBe(1070.00);
+      // 0 (income) - 80 (expenses) - 0 (saved) = -80
+      expect(summary.balance).toBe(-80.00);
     });
 
     it('should throw an error on invalid transaction input', () => {
@@ -211,6 +211,20 @@ describe('LocalStore V3 Database Engine', () => {
     let db;
     beforeEach(() => {
       db = LocalStore.initializeBlank();
+
+      // Manually seed the card-nubank credit card for cycle tests
+      const dbData = LocalStore.exportDatabase();
+      dbData.credit_cards = [
+        {
+          id: 'card-nubank',
+          name: 'Nubank',
+          limit: 1500,
+          closing_day: 28,
+          due_day: 5,
+          active: true
+        }
+      ];
+      localStorage.setItem('financehub_db', JSON.stringify(dbData));
     });
 
     it('should allocate card purchases on day <= closing_day to current invoice month', () => {
@@ -365,7 +379,7 @@ describe('LocalStore V3 Database Engine', () => {
       // Verify monthly summary saved remains only 200 (from seed), ignoring the 300 deposit
       const summary = LocalStore.getSummary(yyyyMM);
       expect(summary.saved).toBe(200.00);
-      expect(summary.balance).toBe(950.00); // 1150 (income) - 0 (expense) - 200 (emergency saved) = 950
+      expect(summary.balance).toBe(-200.00); // 0 (income) - 0 (expense) - 200 (emergency saved) = -200
     });
   });
 
@@ -377,7 +391,7 @@ describe('LocalStore V3 Database Engine', () => {
     it('should export database successfully', () => {
       const db = LocalStore.exportDatabase();
       expect(db._metadata.schema_version).toBe(1);
-      expect(db.transactions.length).toBe(1);
+      expect(db.transactions.length).toBe(0); // Clean sheet starts empty
     });
 
     it('should validate and import valid backup JSONs', () => {
@@ -535,7 +549,7 @@ describe('LocalStore V3 Database Engine', () => {
 
     it('should support manually adding a credit card and persistence', () => {
       const initialCards = LocalStore.getCreditCards();
-      expect(initialCards.length).toBe(1); // Seeds Nubank by default
+      expect(initialCards.length).toBe(0); // Clean sheet starts empty
 
       const card = LocalStore.addCreditCard({
         name: 'Visa Infinite',
@@ -551,7 +565,7 @@ describe('LocalStore V3 Database Engine', () => {
       expect(card.due_day).toBe(25);
 
       const updatedCards = LocalStore.getCreditCards();
-      expect(updatedCards.length).toBe(2);
+      expect(updatedCards.length).toBe(1);
       expect(updatedCards.find(c => c.name === 'Visa Infinite')).toBeDefined();
     });
   });

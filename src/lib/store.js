@@ -178,32 +178,8 @@ function _getBlankTemplate() {
       { "id": "cat-viagem",        "name": "Viagem",                  "type": "expense", "group": "Gastos", "color": "#0ea5e9", "icon": "✈️" },
       { "id": "cat-gas",           "name": "Gás / Casa",              "type": "expense", "group": "Gastos", "color": "#10b981", "icon": "🔧" }
     ],
-    "credit_cards": [
-      {
-        "id": "card-nubank",
-        "name": "Nubank",
-        "limit": 1500,
-        "closing_day": 28,
-        "due_day": 5,
-        "active": true
-      }
-    ],
-    "transactions": [
-      {
-        "id": `tx-${crypto.randomUUID()}`,
-        "date": today,
-        "description": "Bolsa estágio Celepar",
-        "amount": 1150.00,
-        "type": "income",
-        "category_id": "cat-renda-salario",
-        "payment_method": "pix",
-        "credit_card_id": null,
-        "recurring": true,
-        "recurrence_rule": "monthly",
-        "created_at": new Date().toISOString(),
-        "updated_at": new Date().toISOString()
-      }
-    ],
+    "credit_cards": [],
+    "transactions": [],
     "reserves": [],
     "monthly_summaries": {}
   };
