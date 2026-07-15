@@ -25,6 +25,7 @@ const navDashboard = document.getElementById('nav-dashboard');
 const navTransaction = document.getElementById('nav-transaction');
 const navInvoice = document.getElementById('nav-invoice');
 const navReserves = document.getElementById('nav-reserves');
+const navRecurring = document.getElementById('nav-recurring');
 
 // Core Bootstrap
 document.addEventListener('DOMContentLoaded', () => {
@@ -59,6 +60,7 @@ function setupGlobalListeners() {
   });
   if (navInvoice) navInvoice.addEventListener('click', () => goTo('invoice'));
   if (navReserves) navReserves.addEventListener('click', () => goTo('reserves'));
+  if (navRecurring) navRecurring.addEventListener('click', () => goTo('recurring'));
 
   // Export File Backup Action
   if (btnExportBackup) {
@@ -190,7 +192,7 @@ function syncHeaderState() {
   }
 
   // Active classes
-  [navDashboard, navTransaction, navInvoice, navReserves].forEach(btn => {
+  [navDashboard, navTransaction, navInvoice, navReserves, navRecurring].forEach(btn => {
     if (btn) btn.classList.remove('active');
   });
 
@@ -198,6 +200,7 @@ function syncHeaderState() {
   if (currentView === 'transaction-form' && navTransaction) navTransaction.classList.add('active');
   if (currentView === 'invoice' && navInvoice) navInvoice.classList.add('active');
   if (currentView === 'reserves' && navReserves) navReserves.classList.add('active');
+  if (currentView === 'recurring' && navRecurring) navRecurring.classList.add('active');
 
   // Dirty state pill
   if (dirtyIndicator) {
@@ -228,6 +231,9 @@ function render() {
       break;
     case 'reserves':
       appContainer.appendChild(createReservesView());
+      break;
+    case 'recurring':
+      appContainer.appendChild(createRecurringView());
       break;
     default:
       appContainer.appendChild(createOnboardingView());
@@ -1265,6 +1271,267 @@ function createReservesView() {
   // Bind Reserve Creator
   const btnCreateRsv = container.querySelector('#btn-create-reserve');
   btnCreateRsv.addEventListener('click', triggerCreateReserveModal);
+
+  return container;
+}
+
+/**
+ * 6. Recurring Transactions & Configurations View (Contas e Recibos Mensais)
+ */
+function createRecurringView() {
+  const container = document.createElement('div');
+  container.className = 'recurring-container';
+
+  const recurrences = LocalStore.getRecurringTransactions();
+  const categories = LocalStore.getCategories();
+  const cards = LocalStore.getCreditCards();
+
+  // Populate category options based on type
+  const filterCatOptions = (type) => {
+    return categories
+      .filter(c => c.type === type)
+      .map(c => `<option value="${c.id}">${escapeHTML(c.name)}</option>`)
+      .join('');
+  };
+
+  // Build active recurrence rows
+  let recurringRows = '';
+  if (recurrences.length === 0) {
+    recurringRows = `
+      <tr>
+          <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px 0;">
+              Nenhum lançamento recorrente cadastrado. Use o formulário ao lado para cadastrar!
+          </td>
+      </tr>
+    `;
+  } else {
+    recurrences.forEach(rec => {
+      const cat = categories.find(c => c.id === rec.category_id) || { name: 'Outros', color: '#9ca3af' };
+      
+      let paymentText = '';
+      if (rec.payment_method === 'credit_card') {
+        const card = cards.find(c => c.id === rec.credit_card_id);
+        paymentText = `Crédito (${card ? escapeHTML(card.name) : 'Cartão'})`;
+      } else {
+        paymentText = rec.payment_method.toUpperCase();
+      }
+
+      const typeBadge = rec.type === 'income' ? 
+        `<span class="badge success" style="background-color: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 6px; border-radius: 4px; font-size: 11px;">Receita</span>` : 
+        `<span class="badge danger" style="background-color: rgba(244, 63, 94, 0.15); color: #f43f5e; padding: 2px 6px; border-radius: 4px; font-size: 11px;">Despesa</span>`;
+
+      const statusStyle = rec.active ? 
+        'color: var(--text-muted);' : 
+        'color: var(--text-muted); text-decoration: line-through; opacity: 0.5;';
+
+      recurringRows += `
+        <tr style="${statusStyle}">
+            <td style="font-weight: 600;">Dia ${rec.day}</td>
+            <td>
+                <div style="font-weight: 600; color: var(--text-white);">${escapeHTML(rec.description)}</div>
+                <div style="margin-top: 4px;">${typeBadge}</div>
+            </td>
+            <td>
+                <span class="category-pill" style="border-left: 3px solid ${cat.color}; padding-left: 6px;">
+                    ${escapeHTML(cat.name)}
+                </span>
+            </td>
+            <td style="font-size: 13px;">${paymentText}</td>
+            <td style="text-align: right; font-weight: 700; color: ${rec.type === 'income' ? '#10b981' : '#f43f5e'}">
+                ${formatCurrency(rec.amount)}
+            </td>
+            <td style="text-align: center;">
+                <div style="display: flex; gap: 8px; justify-content: center;">
+                    <button class="btn btn-toggle-active" data-id="${rec.id}" style="font-size: 11px; padding: 6px 10px; background-color: ${rec.active ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)'}; color: ${rec.active ? '#f59e0b' : '#10b981'}; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">
+                        ${rec.active ? 'Pausar' : 'Ativar'}
+                    </button>
+                    <button class="btn btn-delete-rec" data-id="${rec.id}" style="font-size: 11px; padding: 6px 10px; background-color: rgba(244, 63, 94, 0.15); color: #f43f5e; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">
+                        Excluir
+                    </button>
+                </div>
+            </td>
+        </tr>
+      `;
+    });
+  }
+
+  container.innerHTML = `
+    <div class="period-selector-row" style="margin-bottom: 24px;">
+        <div>
+            <h2>Lançamentos Mensais Recorrentes</h2>
+            <p style="color: var(--text-muted); font-size: 13.5px; margin-top: 4px;">Configure aqui as cobranças e os recebimentos que se repetem todo mês automaticamente.</p>
+        </div>
+    </div>
+
+    <div class="invoice-grid-layout">
+        <!-- Left panel: Register new recurring item -->
+        <div class="invoice-card-panel">
+            <div class="card-section">
+                <div class="card-section-header" style="margin-bottom: 20px;">
+                    <h3>Nova Recorrência</h3>
+                </div>
+                <form id="recurring-form" class="form-body" style="padding: 0; gap: 16px;">
+                    <div class="form-field">
+                        <label for="rec-description">Descrição *</label>
+                        <input type="text" id="rec-description" placeholder="Ex: Netflix, Internet, Salário" required autocomplete="off" class="form-field" style="background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px; border-radius: var(--radius-sm);">
+                    </div>
+                    <div class="form-field">
+                        <label for="rec-amount">Valor (R$) *</label>
+                        <input type="number" id="rec-amount" placeholder="Ex: 55.90" step="0.01" min="0.01" required autocomplete="off" class="form-field" style="background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px; border-radius: var(--radius-sm);">
+                    </div>
+                    <div class="form-grid-2" style="gap: 16px; grid-template-columns: 1fr 1fr;">
+                        <div class="form-field">
+                            <label for="rec-type">Tipo de Fluxo *</label>
+                            <select id="rec-type" required style="background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px; border-radius: var(--radius-sm);">
+                                <option value="expense">Despesa</option>
+                                <option value="income">Receita</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="rec-day">Dia do Mês *</label>
+                            <input type="number" id="rec-day" min="1" max="31" placeholder="Ex: 10" required class="form-field" style="background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px; border-radius: var(--radius-sm);">
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label for="rec-category">Categoria *</label>
+                        <select id="rec-category" required style="background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px; border-radius: var(--radius-sm);">
+                            ${filterCatOptions('expense')}
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="rec-method">Método de Pagamento *</label>
+                        <select id="rec-method" required style="background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px; border-radius: var(--radius-sm);">
+                            <option value="pix">Pix</option>
+                            <option value="debit">Débito</option>
+                            <option value="cash">Dinheiro Físico</option>
+                            <option value="credit_card">Cartão de Crédito</option>
+                        </select>
+                    </div>
+                    <!-- Conditional Card Selector -->
+                    <div class="form-field" id="rec-card-wrapper" style="display: none;">
+                        <label for="rec-card">Qual Cartão de Crédito? *</label>
+                        <select id="rec-card" style="background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px; border-radius: var(--radius-sm);">
+                            ${cards.map(c => `<option value="${c.id}">${escapeHTML(c.name)} (Fechamento: dia ${c.closing_day})</option>`).join('')}
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="margin-top: 10px; width: 100%; padding: 12px; background-color: var(--primary-color); border: none; border-radius: var(--radius-sm); color: var(--text-white); font-weight: 600; cursor: pointer;">
+                        Salvar Recorrência
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right panel: List of active recurring items -->
+        <div class="invoice-tx-panel">
+            <div class="card-section">
+                <div class="card-section-header" style="margin-bottom: 20px;">
+                    <h3>Sua Configuração de Lançamentos Recorrentes</h3>
+                </div>
+                <div class="table-container">
+                    <table class="tx-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 70px;">Dia</th>
+                                <th>Descrição</th>
+                                <th style="width: 130px;">Categoria</th>
+                                <th style="width: 140px;">Pagamento</th>
+                                <th style="text-align: right; width: 110px;">Valor</th>
+                                <th style="text-align: center; width: 140px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${recurringRows}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+  `;
+
+  // Bind conditional selector toggle
+  const methodSelect = container.querySelector('#rec-method');
+  const cardSelectorWrapper = container.querySelector('#rec-card-wrapper');
+  methodSelect.addEventListener('change', (e) => {
+    cardSelectorWrapper.style.display = e.target.value === 'credit_card' ? 'block' : 'none';
+  });
+
+  // Bind dynamic category filter
+  const typeSelect = container.querySelector('#rec-type');
+  const catSelect = container.querySelector('#rec-category');
+  typeSelect.addEventListener('change', (e) => {
+    catSelect.innerHTML = filterCatOptions(e.target.value);
+  });
+
+  // Form submit handler
+  const form = container.querySelector('#recurring-form');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const description = container.querySelector('#rec-description').value;
+    const amount = parseFloat(container.querySelector('#rec-amount').value);
+    const type = container.querySelector('#rec-type').value;
+    const category_id = container.querySelector('#rec-category').value;
+    const day = parseInt(container.querySelector('#rec-day').value);
+    const payment_method = container.querySelector('#rec-method').value;
+    const credit_card_id = payment_method === 'credit_card' ? container.querySelector('#rec-card').value : null;
+
+    try {
+      LocalStore.addRecurringTransaction({
+        description,
+        amount,
+        type,
+        category_id,
+        day,
+        payment_method,
+        credit_card_id,
+        start_month: currentMonth
+      });
+
+      // Immediately process for current active month so user sees transaction right away!
+      LocalStore.processRecurringTransactions(currentMonth);
+
+      // Reload database reference and view
+      currentDb = LocalStore.exportDatabase();
+      isUnsavedEdits = true;
+      render();
+    } catch (err) {
+      alert('Erro ao cadastrar recorrência: ' + err.message);
+    }
+  });
+
+  // Action listeners: Toggle status
+  container.querySelectorAll('.btn-toggle-active').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      const rec = recurrences.find(r => r.id === id);
+      if (rec) {
+        LocalStore.updateRecurringTransaction(id, { active: !rec.active });
+        
+        // Immediately process for current month if activated
+        if (!rec.active) {
+          LocalStore.processRecurringTransactions(currentMonth);
+        }
+
+        currentDb = LocalStore.exportDatabase();
+        isUnsavedEdits = true;
+        render();
+      }
+    });
+  });
+
+  // Action listeners: Delete
+  container.querySelectorAll('.btn-delete-rec').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      if (confirm('Tem certeza que deseja excluir esta recorrência? Novos lançamentos automáticos não serão mais gerados para os próximos meses.')) {
+        LocalStore.deleteRecurringTransaction(id);
+        currentDb = LocalStore.exportDatabase();
+        isUnsavedEdits = true;
+        render();
+      }
+    });
+  });
 
   return container;
 }

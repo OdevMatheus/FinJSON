@@ -168,19 +168,18 @@ function _getBlankTemplate() {
       }
     },
     "categories": [
-      { "id": "cat-renda-salario", "name": "Salário / Bolsa Estágio", "type": "income", "group": "Renda", "color": "#10b981", "icon": "💼" },
-      { "id": "cat-renda-extra",   "name": "Outras Entradas",         "type": "income", "group": "Renda", "color": "#10b981", "icon": "🪙" },
-      { "id": "cat-fixas",         "name": "Contas Fixas",            "type": "expense", "group": "Gastos", "color": "#f43f5e", "icon": "🏠" },
-      { "id": "cat-alimento",      "name": "Alimentação",             "type": "expense", "group": "Gastos", "color": "#f59e0b", "icon": "🍔" },
-      { "id": "cat-cartao",        "name": "Cartão de Crédito",       "type": "expense", "group": "Gastos", "color": "#4f46e5", "icon": "💳" },
-      { "id": "cat-lazer",         "name": "Lazer",                   "type": "expense", "group": "Gastos", "color": "#06b6d4", "icon": "🎬" },
-      { "id": "cat-pessoal",       "name": "Pessoal",                 "type": "expense", "group": "Gastos", "color": "#8b5cf6", "icon": "💅" },
-      { "id": "cat-viagem",        "name": "Viagem",                  "type": "expense", "group": "Gastos", "color": "#0ea5e9", "icon": "✈️" },
-      { "id": "cat-gas",           "name": "Gás / Casa",              "type": "expense", "group": "Gastos", "color": "#10b981", "icon": "🔧" }
+      { "id": "cat-renda-salario", "name": "Salário & Proventos",       "type": "income",  "group": "Renda",  "color": "#10b981", "icon": "💼" },
+      { "id": "cat-renda-extra",   "name": "Renda Extra & Outros",      "type": "income",  "group": "Renda",  "color": "#10b981", "icon": "🪙" },
+      { "id": "cat-fixas",         "name": "Despesas Fixas & Moradia",  "type": "expense", "group": "Gastos", "color": "#f43f5e", "icon": "🏠" },
+      { "id": "cat-alimento",      "name": "Alimentação & Consumo",     "type": "expense", "group": "Gastos", "color": "#f59e0b", "icon": "🍔" },
+      { "id": "cat-cartao",        "name": "Serviços & Tarifas",        "type": "expense", "group": "Gastos", "color": "#4f46e5", "icon": "💳" },
+      { "id": "cat-lazer",         "name": "Lazer & Entretenimento",    "type": "expense", "group": "Gastos", "color": "#06b6d4", "icon": "🎬" },
+      { "id": "cat-pessoal",       "name": "Cuidados & Saúde",          "type": "expense", "group": "Gastos", "color": "#8b5cf6", "icon": "💅" }
     ],
     "credit_cards": [],
     "transactions": [],
     "reserves": [],
+    "recurring_transactions": [],
     "monthly_summaries": {}
   };
 }
@@ -245,6 +244,7 @@ export const LocalStore = {
       credit_cards: importedData.credit_cards || [],
       transactions: importedData.transactions,
       reserves: importedData.reserves,
+      recurring_transactions: importedData.recurring_transactions || [],
       monthly_summaries: importedData.monthly_summaries || {}
     };
 
@@ -317,6 +317,9 @@ export const LocalStore = {
    * @returns {Array<Object>}
    */
   getTransactions(filters = {}) {
+    if (filters.month) {
+      this.processRecurringTransactions(filters.month);
+    }
     const dbData = _readRaw();
     if (!dbData) return [];
     const transactions = dbData.transactions || [];
@@ -356,6 +359,8 @@ export const LocalStore = {
    * @returns {Object}
    */
   getSummary(yearMonth) {
+    this.processRecurringTransactions(yearMonth);
+
     const dbData = _readRaw();
     if (!dbData) return null;
 
@@ -812,5 +817,265 @@ export const LocalStore = {
     dbData.credit_cards.push(newCard);
     _writeRaw(dbData);
     return newCard;
+  },
+
+  /**
+   * Fetch recurring transactions list.
+   * @returns {Array<Object>}
+   */
+  getRecurringTransactions() {
+    const dbData = _readRaw();
+    if (!dbData) return [];
+    return dbData.recurring_transactions || [];
+  },
+
+  /**
+   * Add a new recurring transaction configuration.
+   * @param {Object} recData 
+   * @returns {Object} Created recurring configuration
+   */
+  addRecurringTransaction(recData) {
+    const dbData = _readRaw();
+    if (!dbData) throw new Error('Database not initialized');
+
+    const { description, amount, type, category_id, day, payment_method, credit_card_id } = recData;
+
+    if (!description || amount === undefined || !type || !category_id || !day || !payment_method) {
+      throw new Error('Todos os campos obrigatórios (description, amount, type, category_id, day, payment_method) devem ser fornecidos.');
+    }
+
+    const normalizedType = type.toLowerCase();
+    if (normalizedType !== 'income' && normalizedType !== 'expense') {
+      throw new Error("O tipo de recorrência deve ser 'income' ou 'expense'.");
+    }
+
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      throw new Error('O valor deve ser um número positivo.');
+    }
+
+    const parsedDay = parseInt(day);
+    if (isNaN(parsedDay) || parsedDay < 1 || parsedDay > 31) {
+      throw new Error('O dia deve ser um número inteiro entre 1 e 31.');
+    }
+
+    // Category check
+    const category = dbData.categories.find(c => c.id === category_id);
+    if (!category) {
+      throw new Error('A categoria fornecida não existe.');
+    }
+
+    // Card check
+    if (payment_method === 'credit_card') {
+      if (!credit_card_id) {
+        throw new Error('Um cartão de crédito deve ser fornecido para compras no crédito.');
+      }
+      const card = dbData.credit_cards.find(c => c.id === credit_card_id);
+      if (!card) {
+        throw new Error('O cartão de crédito fornecido não existe.');
+      }
+    }
+
+    const id = `rec-${crypto.randomUUID()}`;
+    const newRec = {
+      id,
+      description: description.trim(),
+      amount: parseFloat(parsedAmount.toFixed(2)),
+      type: normalizedType,
+      category_id,
+      day: parsedDay,
+      payment_method,
+      credit_card_id: payment_method === 'credit_card' ? credit_card_id : null,
+      active: true,
+      start_month: recData.start_month || new Date().toISOString().substring(0, 7),
+      generated_months: []
+    };
+
+    if (!dbData.recurring_transactions) {
+      dbData.recurring_transactions = [];
+    }
+
+    dbData.recurring_transactions.push(newRec);
+    _writeRaw(dbData);
+    return newRec;
+  },
+
+  /**
+   * Update an existing recurring transaction configuration.
+   * @param {string} id 
+   * @param {Object} updatedFields 
+   * @returns {Object} The updated configuration
+   */
+  updateRecurringTransaction(id, updatedFields) {
+    const dbData = _readRaw();
+    if (!dbData) throw new Error('Database not initialized');
+
+    if (!dbData.recurring_transactions) {
+      dbData.recurring_transactions = [];
+    }
+
+    const index = dbData.recurring_transactions.findIndex(r => r.id === id);
+    if (index === -1) throw new Error('Configuração recorrente não encontrada');
+
+    const existing = dbData.recurring_transactions[index];
+    const updated = {
+      ...existing,
+      ...updatedFields,
+      id: existing.id // Immutable ID
+    };
+
+    // Validations
+    if (updatedFields.type) {
+      const normalizedType = updatedFields.type.toLowerCase();
+      if (normalizedType !== 'income' && normalizedType !== 'expense') {
+        throw new Error("O tipo de recorrência deve ser 'income' ou 'expense'.");
+      }
+    }
+
+    if (updatedFields.amount !== undefined) {
+      const parsedAmount = parseFloat(updatedFields.amount);
+      if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        throw new Error('O valor deve ser um número positivo.');
+      }
+      updated.amount = parseFloat(parsedAmount.toFixed(2));
+    }
+
+    if (updatedFields.day !== undefined) {
+      const parsedDay = parseInt(updatedFields.day);
+      if (isNaN(parsedDay) || parsedDay < 1 || parsedDay > 31) {
+        throw new Error('O dia deve ser um número inteiro entre 1 e 31.');
+      }
+      updated.day = parsedDay;
+    }
+
+    if (updated.payment_method === 'credit_card') {
+      if (!updated.credit_card_id) {
+        throw new Error('Um cartão de crédito deve ser fornecido para compras no crédito.');
+      }
+      const card = dbData.credit_cards.find(c => c.id === updated.credit_card_id);
+      if (!card) {
+        throw new Error('O cartão de crédito fornecido não existe.');
+      }
+    } else {
+      updated.credit_card_id = null;
+    }
+
+    dbData.recurring_transactions[index] = updated;
+    _writeRaw(dbData);
+    return updated;
+  },
+
+  /**
+   * Delete a recurring transaction configuration.
+   * @param {string} id 
+   * @returns {boolean} True if deleted
+   */
+  deleteRecurringTransaction(id) {
+    const dbData = _readRaw();
+    if (!dbData) return false;
+
+    if (!dbData.recurring_transactions) return false;
+
+    const index = dbData.recurring_transactions.findIndex(r => r.id === id);
+    if (index === -1) return false;
+
+    dbData.recurring_transactions.splice(index, 1);
+    _writeRaw(dbData);
+    return true;
+  },
+
+  /**
+   * Process all active recurring configurations for a given yearMonth, generating missing entries.
+   * @param {string} yearMonth - format YYYY-MM
+   */
+  processRecurringTransactions(yearMonth) {
+    const dbData = _readRaw();
+    if (!dbData) return;
+
+    if (!dbData.recurring_transactions) {
+      dbData.recurring_transactions = [];
+    }
+
+    let modified = false;
+
+    dbData.recurring_transactions.forEach(rec => {
+      if (!rec.active) return;
+      if (!rec.generated_months) {
+        rec.generated_months = [];
+      }
+
+      // Questão A: Proteção de Retroatividade (Start Month check)
+      const startMonth = rec.start_month || '2000-01';
+      if (yearMonth < startMonth) return;
+
+      if (!rec.generated_months.includes(yearMonth)) {
+        const [year, month] = yearMonth.split('-').map(Number);
+        
+        let dateStr = '';
+        if (rec.payment_method === 'credit_card' && rec.credit_card_id) {
+          const card = dbData.credit_cards.find(c => c.id === rec.credit_card_id);
+          if (card) {
+            if (rec.day <= card.closing_day) {
+              const maxDays = new Date(year, month, 0).getDate();
+              const finalDay = Math.min(rec.day, maxDays);
+              dateStr = `${year}-${String(month).padStart(2, '0')}-${String(finalDay).padStart(2, '0')}`;
+            } else {
+              // Questão B: Ajuste de meses curtos (ex: Fevereiro)
+              let prevMonth = month - 1;
+              let prevYear = year;
+              if (prevMonth < 1) {
+                prevMonth = 12;
+                prevYear -= 1;
+              }
+              const maxDaysPrev = new Date(prevYear, prevMonth, 0).getDate();
+              if (maxDaysPrev > card.closing_day) {
+                // Previous month is long enough
+                const finalDay = Math.min(rec.day, maxDaysPrev);
+                dateStr = `${prevYear}-${String(prevMonth).padStart(2, '0')}-${String(finalDay).padStart(2, '0')}`;
+              } else {
+                // Previous month (e.g. February) is too short. Any generated date would be <= closing_day.
+                // We generate on the 1st of the target month (which is always <= closing_day), so it belongs to targetMonth's invoice.
+                dateStr = `${year}-${String(month).padStart(2, '0')}-01`;
+              }
+            }
+          } else {
+            const maxDays = new Date(year, month, 0).getDate();
+            const finalDay = Math.min(rec.day, maxDays);
+            dateStr = `${year}-${String(month).padStart(2, '0')}-${String(finalDay).padStart(2, '0')}`;
+          }
+        } else {
+          const maxDays = new Date(year, month, 0).getDate();
+          const finalDay = Math.min(rec.day, maxDays);
+          dateStr = `${year}-${String(month).padStart(2, '0')}-${String(finalDay).padStart(2, '0')}`;
+        }
+
+        const id = `tx-${crypto.randomUUID()}`;
+        const newTx = {
+          id,
+          date: dateStr,
+          description: `${rec.description} (Recorrente)`,
+          amount: parseFloat(rec.amount),
+          type: rec.type,
+          category_id: rec.category_id,
+          payment_method: rec.payment_method,
+          credit_card_id: rec.credit_card_id,
+          installment: { current: 1, total: 1 },
+          recurring: true,
+          recurring_source_id: rec.id,
+          notes: 'Gerado automaticamente pelo sistema de recorrência.',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        dbData.transactions.push(newTx);
+        rec.generated_months.push(yearMonth);
+        modified = true;
+      }
+    });
+
+    if (modified) {
+      _recalculateMonth(dbData, yearMonth);
+      _writeRaw(dbData);
+    }
   }
 };

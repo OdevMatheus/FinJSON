@@ -31,7 +31,7 @@ describe('LocalStore V3 Database Engine', () => {
       expect(LocalStore.isInitialized()).toBe(true);
       expect(db._metadata.schema_version).toBe(1);
       expect(db._metadata.app_version).toBe('3.0.0');
-      expect(db.categories.length).toBe(9);
+      expect(db.categories.length).toBe(7);
       expect(db.credit_cards.length).toBe(0); // Clean sheet
       expect(db.transactions.length).toBe(0); // Clean sheet
       expect(db.reserves.length).toBe(0);
@@ -567,6 +567,232 @@ describe('LocalStore V3 Database Engine', () => {
       const updatedCards = LocalStore.getCreditCards();
       expect(updatedCards.length).toBe(1);
       expect(updatedCards.find(c => c.name === 'Visa Infinite')).toBeDefined();
+    });
+  });
+
+  describe('Recurring Transactions & Automated Generation', () => {
+    beforeEach(() => {
+      LocalStore.initializeBlank();
+    });
+
+    it('should support CRUD operations of recurring configurations', () => {
+      expect(LocalStore.getRecurringTransactions().length).toBe(0);
+
+      const rec = LocalStore.addRecurringTransaction({
+        description: 'Netflix',
+        amount: 55.90,
+        type: 'expense',
+        category_id: 'cat-fixas',
+        day: 10,
+        payment_method: 'pix'
+      });
+
+      expect(rec.id.startsWith('rec-')).toBe(true);
+      expect(rec.description).toBe('Netflix');
+      expect(rec.amount).toBe(55.90);
+      expect(rec.type).toBe('expense');
+      expect(rec.day).toBe(10);
+      expect(rec.payment_method).toBe('pix');
+      expect(rec.active).toBe(true);
+      expect(rec.generated_months).toEqual([]);
+
+      const list = LocalStore.getRecurringTransactions();
+      expect(list.length).toBe(1);
+      expect(list[0].id).toBe(rec.id);
+
+      // Update
+      const updated = LocalStore.updateRecurringTransaction(rec.id, {
+        amount: 59.90,
+        day: 15
+      });
+      expect(updated.amount).toBe(59.90);
+      expect(updated.day).toBe(15);
+
+      // Delete
+      const deleted = LocalStore.deleteRecurringTransaction(rec.id);
+      expect(deleted).toBe(true);
+      expect(LocalStore.getRecurringTransactions().length).toBe(0);
+    });
+
+    it('should automatically generate monthly transactions (bills and receipts) when month is accessed', () => {
+      // 1. Add some recurring configurations
+      LocalStore.addRecurringTransaction({
+        description: 'Bolsa Estágio',
+        amount: 1150.00,
+        type: 'income',
+        category_id: 'cat-renda-salario',
+        day: 1,
+        payment_method: 'pix'
+      });
+
+      LocalStore.addRecurringTransaction({
+        description: 'Academia',
+        amount: 120.00,
+        type: 'expense',
+        category_id: 'cat-pessoal',
+        day: 5,
+        payment_method: 'debit'
+      });
+
+      // 2. View/Recalculate summary of a specific month
+      const summary = LocalStore.getSummary('2026-07');
+
+      // 3. Confirm that transactions have been generated and the summary is computed correctly
+      // Income (1150) - Expense (120) = 1030
+      expect(summary.total_income).toBe(1150.00);
+      expect(summary.total_expenses).toBe(120.00);
+      expect(summary.balance).toBe(1030.00);
+
+      // Verify physical transaction entries
+      const txs = LocalStore.getTransactions({ month: '2026-07' });
+      expect(txs.length).toBe(2);
+
+      const t1 = txs.find(t => t.description.includes('Bolsa Estágio'));
+      expect(t1).toBeDefined();
+      expect(t1.date).toBe('2026-07-01');
+      expect(t1.type).toBe('income');
+      expect(t1.recurring_source_id).toBeDefined();
+
+      const t2 = txs.find(t => t.description.includes('Academia'));
+      expect(t2).toBeDefined();
+      expect(t2.date).toBe('2026-07-05');
+      expect(t2.type).toBe('expense');
+    });
+
+    it('should generate correct transaction dates for credit card payments according to closing cycle', () => {
+      // 1. Add Nubank credit card with closing on 28 and due on 5
+      const card = LocalStore.addCreditCard({
+        name: 'Nubank',
+        limit: 1500.00,
+        closing_day: 28,
+        due_day: 5
+      });
+
+      // 2. Add recurring bill on credit card with day <= closing_day (day 15)
+      // This should generate purchase date "2026-07-15" (falls in Nubank 2026-07 invoice)
+      LocalStore.addRecurringTransaction({
+        description: 'iFood Club',
+        amount: 19.90,
+        type: 'expense',
+        category_id: 'cat-alimento',
+        day: 15,
+        payment_method: 'credit_card',
+        credit_card_id: card.id
+      });
+
+      // 3. Add recurring bill on credit card with day > closing_day (day 30)
+      // To fall in Nubank invoice of 2026-07, the purchase date must be generated in the previous month: "2026-06-30"
+      LocalStore.addRecurringTransaction({
+        description: 'Netflix Premium',
+        amount: 55.90,
+        type: 'expense',
+        category_id: 'cat-lazer',
+        day: 30,
+        payment_method: 'credit_card',
+        credit_card_id: card.id
+      });
+
+      // 4. Access summary of "2026-07" to trigger processing
+      const summary = LocalStore.getSummary('2026-07');
+      expect(summary.total_expenses).toBe(75.80); // 19.90 + 55.90
+
+      // 5. Verify transaction dates
+      const txs = LocalStore.getTransactions({ month: '2026-07' });
+      expect(txs.length).toBe(2);
+
+      const t1 = txs.find(t => t.description.includes('iFood Club'));
+      expect(t1.date).toBe('2026-07-15');
+
+      const t2 = txs.find(t => t.description.includes('Netflix Premium'));
+      expect(t2.date).toBe('2026-06-30');
+    });
+
+    it('should protect against re-generation when a generated transaction has been deleted', () => {
+      // 1. Add a recurring configuration
+      const rec = LocalStore.addRecurringTransaction({
+        description: 'Spotify',
+        amount: 34.90,
+        type: 'expense',
+        category_id: 'cat-lazer',
+        day: 12,
+        payment_method: 'pix'
+      });
+
+      // 2. Access month to generate the transaction
+      const txs1 = LocalStore.getTransactions({ month: '2026-07' });
+      expect(txs1.length).toBe(1);
+      const generatedTx = txs1[0];
+      expect(generatedTx.description).toContain('Spotify');
+
+      // 3. Manually delete the generated transaction
+      LocalStore.deleteTransaction(generatedTx.id);
+
+      // 4. Re-access the month, verify that it was NOT re-generated (because of generated_months track)
+      const txs2 = LocalStore.getTransactions({ month: '2026-07' });
+      expect(txs2.length).toBe(0);
+    });
+
+    it('should enforce start_month and prevent retroactivity', () => {
+      // Add a recurring config starting in 2026-07
+      LocalStore.addRecurringTransaction({
+        description: 'Gym',
+        amount: 90.00,
+        type: 'expense',
+        category_id: 'cat-pessoal',
+        day: 5,
+        payment_method: 'pix',
+        start_month: '2026-07'
+      });
+
+      // Access month BEFORE start_month (e.g. 2026-06)
+      const prevSummary = LocalStore.getSummary('2026-06');
+      expect(prevSummary.total_expenses).toBe(0.00); // 0 generated
+
+      const prevTxs = LocalStore.getTransactions({ month: '2026-06' });
+      expect(prevTxs.length).toBe(0);
+
+      // Access month EQUAL TO OR AFTER start_month
+      const activeSummary = LocalStore.getSummary('2026-07');
+      expect(activeSummary.total_expenses).toBe(90.00); // generated!
+
+      const activeTxs = LocalStore.getTransactions({ month: '2026-07' });
+      expect(activeTxs.length).toBe(1);
+    });
+
+    it('should handle short months correctly for credit cards with closing day near end of month (e.g. February)', () => {
+      // Card has closing day on 28.
+      const card = LocalStore.addCreditCard({
+        name: 'Nubank',
+        limit: 1500.00,
+        closing_day: 28,
+        due_day: 5
+      });
+
+      // Recurrence on day 30 of Nubank.
+      // For March 2026 invoice, standard previous month (February) only has 28 days.
+      // February 2026 max days = 28 <= card.closing_day (28).
+      // So generating in February would place it on or before Feb 28, falling into Feb invoice (since day <= 28).
+      // Thus, our fix should place it on 2026-03-01 instead, so it falls in March invoice.
+      LocalStore.addRecurringTransaction({
+        description: 'Hostinger',
+        amount: 35.00,
+        type: 'expense',
+        category_id: 'cat-fixas',
+        day: 30,
+        payment_method: 'credit_card',
+        credit_card_id: card.id,
+        start_month: '2026-03'
+      });
+
+      // Trigger generation for March 2026
+      const summary = LocalStore.getSummary('2026-03');
+      expect(summary.total_expenses).toBe(35.00);
+
+      const txs = LocalStore.getTransactions({ month: '2026-03' });
+      expect(txs.length).toBe(1);
+      
+      const tx = txs[0];
+      expect(tx.date).toBe('2026-03-01'); // Correctly adjusted to March 1st!
     });
   });
 });
