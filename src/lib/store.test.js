@@ -34,7 +34,7 @@ describe('LocalStore V3 Database Engine', () => {
       expect(db.categories.length).toBe(9);
       expect(db.credit_cards.length).toBe(1);
       expect(db.transactions.length).toBe(1); // Standard initial Salary transaction
-      expect(db.reserves.length).toBe(2);
+      expect(db.reserves.length).toBe(0);
     });
 
     it('should load master lists correctly after init', () => {
@@ -45,7 +45,7 @@ describe('LocalStore V3 Database Engine', () => {
 
       expect(categories.find(c => c.id === 'cat-alimento')).toBeDefined();
       expect(cards.find(c => c.id === 'card-nubank')).toBeDefined();
-      expect(reserves.find(r => r.id === 'rsv-emergencia')).toBeDefined();
+      expect(reserves.length).toBe(0);
     });
   });
 
@@ -80,8 +80,8 @@ describe('LocalStore V3 Database Engine', () => {
       const summary = LocalStore.getSummary(yyyyMM);
       // Salary (1150) + Bonus (500) = 1650
       expect(summary.total_income).toBe(1650.00);
-      // Reserves initial deposit is 200, so liquid balance is: 1650 (income) - 0 (expense) - 200 (saved) = 1450
-      expect(summary.balance).toBe(1450.00);
+      // Reserves initial deposit is 0, so liquid balance is: 1650 (income) - 0 (expense) - 0 (saved) = 1650
+      expect(summary.balance).toBe(1650.00);
     });
 
     it('should add an expense transaction and trigger summary recalculation', () => {
@@ -102,8 +102,8 @@ describe('LocalStore V3 Database Engine', () => {
       // Check summary was recalculated
       const summary = LocalStore.getSummary(yyyyMM);
       expect(summary.total_expenses).toBe(80.00);
-      // 1150 (income) - 80 (expenses) - 200 (saved) = 870
-      expect(summary.balance).toBe(870.00);
+      // 1150 (income) - 80 (expenses) - 0 (saved) = 1070
+      expect(summary.balance).toBe(1070.00);
     });
 
     it('should throw an error on invalid transaction input', () => {
@@ -267,6 +267,20 @@ describe('LocalStore V3 Database Engine', () => {
   describe('Financial Reserves & Goal Progress', () => {
     beforeEach(() => {
       LocalStore.initializeBlank();
+      
+      // Manually seed a reserve goal inside localStorage for these test cases
+      const db = LocalStore.exportDatabase();
+      db.reserves = [
+        {
+          id: 'rsv-emergencia',
+          name: 'Reserva de Emergência',
+          goal_amount: 6000,
+          movements: [
+            { date: new Date().toISOString().split('T')[0], amount: 200, type: 'deposit', note: 'Saldo inicial' }
+          ]
+        }
+      ];
+      localStorage.setItem('financehub_db', JSON.stringify(db));
     });
 
     it('should calculate reserve balances dynamically from movements', () => {

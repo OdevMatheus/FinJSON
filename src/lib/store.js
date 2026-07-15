@@ -202,22 +202,7 @@ function _getBlankTemplate() {
         "updated_at": new Date().toISOString()
       }
     ],
-    "reserves": [
-      {
-        "id": "rsv-emergencia",
-        "name": "Reserva de Emergência",
-        "goal_amount": 6000,
-        "movements": [
-          { "date": today, "amount": 200, "type": "deposit", "note": "Saldo inicial" }
-        ]
-      },
-      {
-        "id": "rsv-viagem",
-        "name": "Viagem de Fim de Ano",
-        "goal_amount": 400,
-        "movements": []
-      }
-    ],
+    "reserves": [],
     "monthly_summaries": {}
   };
 }
