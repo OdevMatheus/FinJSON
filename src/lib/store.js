@@ -110,15 +110,15 @@ function _recalculateMonth(dbData, yearMonth) {
     }
   });
 
-  // 3. Sum up reserves movements saved (deposited minus withdrawn) in this month (ignoring reserves with ignore_balance flag)
+  // 3. Sum up reserves movements saved (deposited minus withdrawn) in this month (ignoring specific movements flagged with ignore_balance)
   let saved = 0;
   reserves.forEach(res => {
-    if (res.ignore_balance) return; // Skip discounting from liquid balance
-
     const movements = res.movements || [];
     const monthlyMovements = movements.filter(m => m.date.startsWith(yearMonth));
     
     monthlyMovements.forEach(m => {
+      if (m.ignore_balance) return; // Skip discounting from liquid balance
+
       const amount = parseFloat(m.amount);
       if (m.type === 'deposit') {
         saved += amount;
@@ -607,13 +607,14 @@ export const LocalStore = {
     if (index === -1) throw new Error('Reserve not found');
 
     const reserve = reserves[index];
-    const { amount, type, date, note } = movementData;
+    const { amount, type, date, note, ignore_balance } = movementData;
 
     const movement = {
       id: `mov-${crypto.randomUUID()}`,
       date,
       amount: parseFloat(parseFloat(amount).toFixed(2)),
       type: type.toLowerCase(), // "deposit" | "withdraw"
+      ignore_balance: type.toLowerCase() === 'deposit' ? !!ignore_balance : false,
       note: (note || '').trim()
     };
 

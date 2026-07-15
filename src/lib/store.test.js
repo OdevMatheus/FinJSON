@@ -339,26 +339,26 @@ describe('LocalStore V3 Database Engine', () => {
       }).toThrow();
     });
 
-    it('should NOT discount from liquid balance if reserve has ignore_balance set to true', () => {
+    it('should NOT discount from liquid balance if reserve movement has ignore_balance set to true', () => {
       const today = new Date().toISOString().split('T')[0];
       const yyyyMM = today.substring(0, 7);
 
-      // Create a reserve with ignore_balance: true
+      // Create a plain reserve
       const db = LocalStore.exportDatabase();
       db.reserves.push({
-        id: 'rsv-ignored',
-        name: 'Reserva Ignorada',
+        id: 'rsv-plain',
+        name: 'Reserva Comum',
         goal_amount: 1000,
-        ignore_balance: true,
         movements: []
       });
       localStorage.setItem('financehub_db', JSON.stringify(db));
 
-      // Add a deposit movement to the ignored reserve
-      LocalStore.addReserveMovement('rsv-ignored', {
+      // Add a deposit movement to the reserve with ignore_balance: true
+      LocalStore.addReserveMovement('rsv-plain', {
         date: today,
         amount: 300.00,
         type: 'deposit',
+        ignore_balance: true,
         note: 'Aporte poupança antiga'
       });
 
