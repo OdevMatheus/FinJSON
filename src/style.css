@@ -162,7 +162,8 @@ body {
     gap: 16px;
 }
 
-.btn-export {
+.btn-export,
+.btn-import-header {
     background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
     border: 1px solid var(--border-color);
     color: var(--text-main);
@@ -178,7 +179,8 @@ body {
     gap: 8px;
 }
 
-.btn-export:hover {
+.btn-export:hover,
+.btn-import-header:hover {
     border-color: var(--primary-color);
     color: var(--text-white);
     transform: translateY(-1px);

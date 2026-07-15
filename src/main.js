@@ -15,6 +15,8 @@ const appContainer = document.getElementById('app');
 const appHeader = document.getElementById('app-header');
 const dirtyIndicator = document.getElementById('dirty-indicator');
 const btnExportBackup = document.getElementById('btn-export-backup');
+const btnImportHeader = document.getElementById('btn-import-header');
+const headerFileInput = document.getElementById('header-file-input');
 
 // Navigation Tabs
 const navDashboard = document.getElementById('nav-dashboard');
@@ -59,6 +61,14 @@ function setupGlobalListeners() {
   // Export File Backup Action
   if (btnExportBackup) {
     btnExportBackup.addEventListener('click', handleExportBackup);
+  }
+
+  // Import File Backup Action (Header)
+  if (btnImportHeader && headerFileInput) {
+    btnImportHeader.addEventListener('click', () => {
+      headerFileInput.click();
+    });
+    headerFileInput.addEventListener('change', handleHeaderFileImport);
   }
 }
 
@@ -106,6 +116,44 @@ function handleExportBackup() {
   // Clear visual dirty indicators
   isUnsavedEdits = false;
   syncHeaderState();
+}
+
+/**
+ * Reads and validates JSON file imported directly from the header, reloading active layouts.
+ */
+function handleHeaderFileImport() {
+  if (!headerFileInput.files || headerFileInput.files.length === 0) return;
+
+  const file = headerFileInput.files[0];
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    try {
+      const jsonData = JSON.parse(e.target.result);
+      const db = LocalStore.importDatabase(jsonData);
+      
+      alert('Backup de dados importado e restaurado com sucesso!');
+      
+      // Update in-memory reference and clear unsaved state
+      currentDb = db;
+      isUnsavedEdits = false;
+      
+      // Navigate to dashboard
+      goTo('dashboard');
+    } catch (err) {
+      alert('Erro ao importar backup: ' + err.message);
+    } finally {
+      // Clear input value so same file can be re-imported
+      headerFileInput.value = '';
+    }
+  };
+
+  reader.onerror = () => {
+    alert('Erro ao ler o arquivo selecionado.');
+    headerFileInput.value = '';
+  };
+
+  reader.readAsText(file);
 }
 
 /**
