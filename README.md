@@ -54,11 +54,8 @@ In a web landscape dominated by subscription-based SaaS and frequent cloud datab
 
 ```text
 Finjson/
-├── docs/                 # Technical specifications and plans
-│   ├── README-PT.md      # Portuguese documentation
-│   ├── plano-estrutura-json.md
-│   ├── plano-main-js.md
-│   └── plano-store-js.md
+├── docs/                 # Technical specifications and docs
+│   └── README-PT.md      # Portuguese documentation
 ├── public/               # Public static assets
 │   ├── favicon.svg       # Browser header icon (Vector SVG)
 │   └── icons.svg         # Additional public SVGs

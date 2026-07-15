@@ -54,11 +54,8 @@ Na era dos SaaS por assinatura e vazamentos de dados, o aplicativo propõe um ec
 
 ```text
 Finjson/
-├── docs/                 # Documentos de especificação técnica e planos de dados
-│   ├── README-PT.md      # Documentação do projeto em Português
-│   ├── plano-estrutura-json.md
-│   ├── plano-main-js.md
-│   └── plano-store-js.md
+├── docs/                 # Documentos de especificação técnica e documentação
+│   └── README-PT.md      # Documentação do projeto em Português
 ├── public/               # Ativos estáticos públicos (Favicons, ícones)
 │   ├── favicon.svg       # Ícone de cabeçalho do navegador (Vetor)
 │   └── icons.svg         # Biblioteca de ícones vetoriais adicionais
