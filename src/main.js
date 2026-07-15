@@ -1629,10 +1629,8 @@ function createRecurringView() {
       // Immediately process for current active month so user sees transaction right away!
       LocalStore.processRecurringTransactions(currentMonth);
 
-      // Reload database reference and view
-      currentDb = LocalStore.exportDatabase();
-      isUnsavedEdits = true;
-      render();
+      // Reload database reference and view using helper
+      updateDbAndAutosave(LocalStore.exportDatabase());
     } catch (err) {
       alert('Erro ao cadastrar recorrência: ' + err.message);
     }
@@ -1651,9 +1649,7 @@ function createRecurringView() {
           LocalStore.processRecurringTransactions(currentMonth);
         }
 
-        currentDb = LocalStore.exportDatabase();
-        isUnsavedEdits = true;
-        render();
+        updateDbAndAutosave(LocalStore.exportDatabase());
       }
     });
   });
@@ -1664,9 +1660,7 @@ function createRecurringView() {
       const id = btn.getAttribute('data-id');
       if (confirm('Tem certeza que deseja excluir esta recorrência? Novos lançamentos automáticos não serão mais gerados para os próximos meses.')) {
         LocalStore.deleteRecurringTransaction(id);
-        currentDb = LocalStore.exportDatabase();
-        isUnsavedEdits = true;
-        render();
+        updateDbAndAutosave(LocalStore.exportDatabase());
       }
     });
   });
