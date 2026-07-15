@@ -530,10 +530,14 @@ function createDashboardView() {
                 ${tx.notes ? `<span class="tx-desc-note">${escapeHTML(tx.notes)}</span>` : ''}
             </td>
             <td class="cell-cat">
-                <span class="category-indicator-dot" style="background-color: ${category.color};"></span>
-                ${escapeHTML(category.name)}
+                <div class="category-badge-container">
+                    <span class="category-indicator-dot" style="background-color: ${category.color};"></span>
+                    <span>${escapeHTML(category.name)}</span>
+                </div>
             </td>
-            <td class="cell-method">${methodText}</td>
+            <td class="cell-method">
+                <span class="method-badge-pill">${methodText}</span>
+            </td>
             <td class="cell-amount ${tx.type === 'income' ? 'success-text' : 'danger-text'}">
                 ${tx.type === 'income' ? '+' : '-'} ${formatCurrency(tx.amount)}
             </td>
@@ -1332,11 +1336,14 @@ function createRecurringView() {
                 <div style="margin-top: 4px;">${typeBadge}</div>
             </td>
             <td>
-                <span class="category-pill" style="border-left: 3px solid ${cat.color}; padding-left: 6px;">
-                    ${escapeHTML(cat.name)}
-                </span>
+                <div class="category-badge-container">
+                    <span class="category-indicator-dot" style="background-color: ${cat.color};"></span>
+                    <span>${escapeHTML(cat.name)}</span>
+                </div>
             </td>
-            <td style="font-size: 13px;">${paymentText}</td>
+            <td>
+                <span class="method-badge-pill">${paymentText}</span>
+            </td>
             <td style="text-align: right; font-weight: 700; color: ${rec.type === 'income' ? '#10b981' : '#f43f5e'}">
                 ${formatCurrency(rec.amount)}
             </td>

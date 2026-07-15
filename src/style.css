@@ -674,10 +674,13 @@ body {
 }
 
 .cell-cat {
+    vertical-align: middle;
+}
+
+.category-badge-container {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    height: 100%;
 }
 
 .category-indicator-dot {
@@ -688,6 +691,10 @@ body {
 }
 
 .cell-method {
+    vertical-align: middle;
+}
+
+.method-badge-pill {
     font-size: 11px;
     font-weight: 700;
     color: var(--text-muted);
