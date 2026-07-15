@@ -2,6 +2,126 @@ import './style.css';
 import { LocalStore } from './lib/store';
 import { escapeHTML, formatCurrency, formatMonthLabel, getToneMeta } from './lib/ui-helpers';
 
+/**
+ * Generates the HTML string containing a premium SVG Doughnut Chart and matching horizontal progressive category bars.
+ * @param {Object} byCategory - Map of category_id -> amount
+ * @param {number} totalExpenses - Total expenses amount
+ * @param {Array<Object>} categories - List of category configurations
+ * @returns {string} HTML markup string
+ */
+function generateCategoryDistributionHTML(byCategory, totalExpenses, categories) {
+  const categoryKeys = Object.keys(byCategory || {});
+  
+  if (categoryKeys.length === 0 || totalExpenses <= 0) {
+    return `
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 0; gap: 16px;">
+        <svg width="120" height="120" viewBox="0 0 120 120" style="display: block; margin: 0 auto;">
+          <circle cx="60" cy="60" r="42" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="8"></circle>
+          <text x="60" y="56" text-anchor="middle" dominant-baseline="middle" fill="var(--text-muted)" font-size="8" font-weight="600">R$ 0,00</text>
+          <text x="60" y="70" text-anchor="middle" dominant-baseline="middle" fill="var(--text-muted)" font-size="7">Sem Despesas</text>
+        </svg>
+        <div class="category-empty-placeholder" style="text-align: center; color: var(--text-muted); font-size: 13px;">
+            Nenhum gasto registrado para este período.
+        </div>
+      </div>
+    `;
+  }
+
+  // Sort categories by sum DESC
+  const sortedCategories = categoryKeys.map(key => {
+    const cat = categories.find(c => c.id === key) || { name: 'Outros', color: '#9ca3af' };
+    return {
+      id: key,
+      name: cat.name,
+      color: cat.color,
+      amount: parseFloat(byCategory[key] || 0)
+    };
+  }).filter(c => c.amount > 0).sort((a, b) => b.amount - a.amount);
+
+  if (sortedCategories.length === 0) {
+    return `
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 0; gap: 16px;">
+        <svg width="120" height="120" viewBox="0 0 120 120" style="display: block; margin: 0 auto;">
+          <circle cx="60" cy="60" r="42" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="8"></circle>
+          <text x="60" y="56" text-anchor="middle" dominant-baseline="middle" fill="var(--text-muted)" font-size="8" font-weight="600">R$ 0,00</text>
+          <text x="60" y="70" text-anchor="middle" dominant-baseline="middle" fill="var(--text-muted)" font-size="7">Sem Despesas</text>
+        </svg>
+      </div>
+    `;
+  }
+
+  // Generate SVG Doughnut Chart Segments
+  let cumulativeAngle = -90; // Start at 12 o'clock
+  const radius = 42;
+  const circumference = 2 * Math.PI * radius; // ~263.89
+  
+  let svgCircles = '';
+  sortedCategories.forEach(cat => {
+    const percentage = (cat.amount / totalExpenses) * 100;
+    const strokeDashOffset = circumference - (circumference * percentage) / 100;
+    
+    svgCircles += `
+      <circle 
+        cx="60" 
+        cy="60" 
+        r="${radius}" 
+        fill="none" 
+        stroke="${cat.color}" 
+        stroke-width="10" 
+        stroke-dasharray="${circumference}" 
+        stroke-dashoffset="${strokeDashOffset}" 
+        transform="rotate(${cumulativeAngle} 60 60)"
+        style="transition: stroke-dashoffset 0.4s ease; transform-origin: center;"
+      ></circle>
+    `;
+    cumulativeAngle += (percentage / 100) * 360;
+  });
+
+  const doughnutSVG = `
+    <div style="position: relative; width: 140px; height: 140px; margin: 0 auto 28px auto;">
+      <svg width="140" height="140" viewBox="0 0 120 120" style="display: block;">
+        <!-- Background track -->
+        <circle cx="60" cy="60" r="${radius}" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="10"></circle>
+        ${svgCircles}
+      </svg>
+      <!-- Center Text Overlays -->
+      <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;">
+        <span style="font-size: 11.5px; font-weight: 700; color: var(--text-white); text-align: center; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            ${formatCurrency(totalExpenses)}
+        </span>
+        <span style="font-size: 7.5px; font-weight: 700; color: var(--text-muted); margin-top: 3px; letter-spacing: 0.5px;">GASTOS</span>
+      </div>
+    </div>
+  `;
+
+  // Generate progress rows
+  let progressRows = '<div style="display: flex; flex-direction: column; gap: 16px;">';
+  sortedCategories.forEach(cat => {
+    const pct = ((cat.amount / totalExpenses) * 100).toFixed(0);
+    progressRows += `
+      <div class="category-breakdown-row" style="cursor: pointer; transition: transform 0.15s ease;" onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='translateX(0)'">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 13px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="category-dot" style="background-color: ${cat.color}; width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+                  <span style="font-weight: 600; color: var(--text-white);">${escapeHTML(cat.name)}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">${pct}%</span>
+                  <span style="font-weight: 700; color: var(--text-main);">${formatCurrency(cat.amount)}</span>
+              </div>
+          </div>
+          <!-- Custom horizontal track -->
+          <div style="width: 100%; height: 6px; background-color: rgba(255,255,255,0.03); border-radius: 50px; overflow: hidden; border: 1px solid rgba(255,255,255,0.02);">
+              <div style="width: ${pct}%; height: 100%; background-color: ${cat.color}; border-radius: 50px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+          </div>
+      </div>
+    `;
+  });
+  progressRows += '</div>';
+
+  return doughnutSVG + progressRows;
+}
+
 // Application State Variables
 let currentDb = null;
 let currentView = 'onboarding'; // 'onboarding' | 'dashboard' | 'transaction-form' | 'invoice' | 'reserves'
@@ -625,47 +745,13 @@ function createDashboardView() {
   const rightCol = document.createElement('div');
   rightCol.className = 'dashboard-right-col';
 
-  let categoryRows = '';
-  const categoryKeys = Object.keys(summary.by_category || {});
-
-  if (categoryKeys.length === 0) {
-    categoryRows = `
-      <div class="category-empty-placeholder">
-          Nenhuma despesa ou receita ativa neste mês.
-      </div>
-    `;
-  } else {
-    // Sort categories by sum DESC
-    const sortedCategories = categoryKeys.map(key => {
-      const cat = categories.find(c => c.id === key) || { name: 'Outros', color: '#9ca3af' };
-      return {
-        id: key,
-        name: cat.name,
-        color: cat.color,
-        amount: summary.by_category[key]
-      };
-    }).sort((a, b) => b.amount - a.amount);
-
-    sortedCategories.forEach(cat => {
-      categoryRows += `
-        <div class="category-breakdown-row">
-            <div class="category-breakdown-info">
-                <span class="category-dot" style="background-color: ${cat.color};"></span>
-                <span class="category-name">${escapeHTML(cat.name)}</span>
-                <span class="category-value-text">${formatCurrency(cat.amount)}</span>
-            </div>
-        </div>
-      `;
-    });
-  }
-
   rightCol.innerHTML = `
     <div class="card-section">
         <div class="card-section-header">
             <h3>Distribuição por Categoria</h3>
         </div>
-        <div class="category-breakdown-card-body">
-            ${categoryRows}
+        <div class="category-breakdown-card-body" style="gap: 20px;">
+            ${generateCategoryDistributionHTML(summary.by_category, summary.total_expenses, categories)}
         </div>
     </div>
   `;
@@ -684,34 +770,6 @@ function createYearlySummaryBlock(year) {
 
   const yearly = LocalStore.getYearlySummary(year);
   const categories = LocalStore.getCategories();
-
-  let catSummaryRows = '';
-  const catKeys = Object.keys(yearly.by_category || {});
-  
-  if (catKeys.length === 0) {
-    catSummaryRows = `<div class="category-empty-placeholder">Sem despesas registradas neste ano.</div>`;
-  } else {
-    const sortedCats = catKeys.map(key => {
-      const cat = categories.find(c => c.id === key) || { name: 'Outros', color: '#9ca3af' };
-      return {
-        name: cat.name,
-        color: cat.color,
-        amount: yearly.by_category[key]
-      };
-    }).sort((a, b) => b.amount - a.amount);
-
-    sortedCats.forEach(cat => {
-      catSummaryRows += `
-        <div class="category-breakdown-row">
-            <div class="category-breakdown-info">
-                <span class="category-dot" style="background-color: ${cat.color};"></span>
-                <span class="category-name">${escapeHTML(cat.name)}</span>
-                <span class="category-value-text">${formatCurrency(cat.amount)}</span>
-            </div>
-        </div>
-      `;
-    });
-  }
 
   container.innerHTML = `
     <!-- Header banner in dark gradient -->
@@ -741,8 +799,8 @@ function createYearlySummaryBlock(year) {
 
     <div class="card-section" style="margin-top: 24px;">
         <div class="card-section-header"><h3>Consolidado de Categorias Anual</h3></div>
-        <div class="category-breakdown-card-body">
-            ${catSummaryRows}
+        <div class="category-breakdown-card-body" style="gap: 20px;">
+            ${generateCategoryDistributionHTML(yearly.by_category, yearly.total_expenses, categories)}
         </div>
     </div>
   `;
