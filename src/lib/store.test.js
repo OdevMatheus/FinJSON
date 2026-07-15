@@ -224,7 +224,7 @@ describe('LocalStore V3 Database Engine', () => {
           active: true
         }
       ];
-      localStorage.setItem('financehub_db', JSON.stringify(dbData));
+      localStorage.setItem('finjson_db', JSON.stringify(dbData));
     });
 
     it('should allocate card purchases on day <= closing_day to current invoice month', () => {
@@ -294,7 +294,7 @@ describe('LocalStore V3 Database Engine', () => {
           ]
         }
       ];
-      localStorage.setItem('financehub_db', JSON.stringify(db));
+      localStorage.setItem('finjson_db', JSON.stringify(db));
     });
 
     it('should calculate reserve balances dynamically from movements', () => {
@@ -365,7 +365,7 @@ describe('LocalStore V3 Database Engine', () => {
         goal_amount: 1000,
         movements: []
       });
-      localStorage.setItem('financehub_db', JSON.stringify(db));
+      localStorage.setItem('finjson_db', JSON.stringify(db));
 
       // Add a deposit movement to the reserve with ignore_balance: true
       LocalStore.addReserveMovement('rsv-plain', {

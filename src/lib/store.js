@@ -1,5 +1,5 @@
 /**
- * FinanceHub Pro V3 - Local-First Database Engine
+ * FinJSON Pro V3 - Local-First Database Engine
  * 
  * Handles all CRUD operations, schema migrations, credit card billing cycles,
  * reserve goals calculations, and monthly caching.
@@ -7,7 +7,7 @@
  * @module LocalStore
  */
 
-const STORAGE_KEY = 'financehub_db';
+const STORAGE_KEY = 'finjson_db';
 
 /**
  * Gets the raw parsed data from LocalStorage.
@@ -16,8 +16,17 @@ const STORAGE_KEY = 'financehub_db';
  * @returns {Object|null}
  */
 function _readRaw() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return null;
+  let raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) {
+    // Migração transparente de dados do legado financehub_db para finjson_db
+    raw = localStorage.getItem('financehub_db');
+    if (raw) {
+      localStorage.setItem(STORAGE_KEY, raw);
+      localStorage.removeItem('financehub_db');
+    } else {
+      return null;
+    }
+  }
   try {
     return JSON.parse(raw);
   } catch (err) {
@@ -186,11 +195,11 @@ function _getBlankTemplate() {
 
 export const LocalStore = {
   /**
-   * Checks if a LocalStorage FinanceHub database is present.
+   * Checks if a LocalStorage FinJSON database is present.
    * @returns {boolean}
    */
   isInitialized() {
-    return localStorage.getItem(STORAGE_KEY) !== null;
+    return localStorage.getItem(STORAGE_KEY) !== null || localStorage.getItem('financehub_db') !== null;
   },
 
   /**

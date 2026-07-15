@@ -115,8 +115,8 @@ function handleExportBackup() {
   tempLink.href = url;
   
   const todayStr = new Date().toISOString().split('T')[0];
-  tempLink.download = `financehub_backup_${todayStr}.json`;
-  
+  tempLink.download = `finjson_backup_${todayStr}.json`;
+
   document.body.appendChild(tempLink);
   tempLink.click();
   document.body.removeChild(tempLink);
@@ -125,7 +125,7 @@ function handleExportBackup() {
   // Clear visual dirty indicators
   isUnsavedEdits = false;
   syncHeaderState();
-}
+  }
 
 /**
  * Reads and validates JSON file imported directly from the header, reloading active layouts.
@@ -172,6 +172,7 @@ function handleResetDatabase() {
   if (!confirm('ATENÇÃO: Você deseja apagar definitivamente TODOS os seus dados financeiros deste navegador? Esta ação é irreversível e apagará todos os seus lançamentos, categorias e metas.')) return;
   
   if (confirm('Você realmente deseja prosseguir com a exclusão? Todo o seu histórico local será perdido permanentemente.')) {
+    localStorage.removeItem('finjson_db');
     localStorage.removeItem('financehub_db');
     currentDb = null;
     isUnsavedEdits = false;
@@ -255,7 +256,7 @@ function createOnboardingView() {
         <span class="onboarding-brand-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
         </span>
-        <h2>Bem-vindo ao FinanceHub Pro</h2>
+        <h2>Bem-vindo ao FinJSON Pro</h2>
         <p>Sua carteira financeira local, 100% privada e portátil.</p>
     </div>
     

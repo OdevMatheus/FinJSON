@@ -1,5 +1,5 @@
 /**
- * FinanceHub Pro V3 - UI Helper Utilities
+ * FinJSON Pro V3 - UI Helper Utilities
  * 
  * Reusable layout cells, currency formatters, and HTML sanitization.
  * 

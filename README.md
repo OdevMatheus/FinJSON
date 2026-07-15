@@ -1,6 +1,6 @@
-# FinanceHub Pro V3 - Gestão Financeira Local-First 💰
+# FinJSON Pro V3 - Gestão Financeira Local-First 💰
 
-O **FinanceHub Pro** é um gerenciador de finanças pessoais elegante, moderno e **100% Local-First**. Esta aplicação foi desenvolvida no formato **SPA (Single Page Application)**, rodando exclusivamente no seu navegador com máximo desempenho e privacidade absoluta.
+O **FinJSON Pro** é um gerenciador de finanças pessoais elegante, moderno e **100% Local-First**. Esta aplicação foi desenvolvida no formato **SPA (Single Page Application)**, rodando exclusivamente no seu navegador com máximo desempenho e privacidade absoluta.
 
 ---
 
@@ -60,7 +60,7 @@ Os arquivos prontos serão gerados na pasta `/dist`.
 ## 📂 Estrutura Simplificada do Repositório
 
 ```text
-FinanceHub/
+FinJSON/
 ├── public/               # Ativos estáticos (favicons, manifestos)
 ├── src/
 │   ├── lib/
