@@ -509,4 +509,50 @@ describe('LocalStore V3 Database Engine', () => {
       expect(yearly.average_income).toBe(1100.00); // (1000 + 1200) / 2
     });
   });
+
+  describe('Manual Creations (Reserves & Cards)', () => {
+    beforeEach(() => {
+      LocalStore.initializeBlank();
+    });
+
+    it('should support manually adding a reserve goal and persistence', () => {
+      const initialReserves = LocalStore.getReserves();
+      expect(initialReserves.length).toBe(0); // Starts blank per previous requirement
+
+      const rsv = LocalStore.addReserve({
+        name: 'Notebook Novo',
+        goal_amount: 3500.00
+      });
+
+      expect(rsv.id.startsWith('rsv-')).toBe(true);
+      expect(rsv.name).toBe('Notebook Novo');
+      expect(rsv.goal_amount).toBe(3500.00);
+
+      const updatedReserves = LocalStore.getReserves();
+      expect(updatedReserves.length).toBe(1);
+      expect(updatedReserves[0].name).toBe('Notebook Novo');
+    });
+
+    it('should support manually adding a credit card and persistence', () => {
+      const initialCards = LocalStore.getCreditCards();
+      expect(initialCards.length).toBe(1); // Seeds Nubank by default
+
+      const card = LocalStore.addCreditCard({
+        name: 'Visa Infinite',
+        limit: 10000.00,
+        closing_day: 15,
+        due_day: 25
+      });
+
+      expect(card.id.startsWith('card-')).toBe(true);
+      expect(card.name).toBe('Visa Infinite');
+      expect(card.limit).toBe(10000.00);
+      expect(card.closing_day).toBe(15);
+      expect(card.due_day).toBe(25);
+
+      const updatedCards = LocalStore.getCreditCards();
+      expect(updatedCards.length).toBe(2);
+      expect(updatedCards.find(c => c.name === 'Visa Infinite')).toBeDefined();
+    });
+  });
 });

@@ -6,6 +6,7 @@ import { escapeHTML, formatCurrency, formatMonthLabel, getToneMeta } from './lib
 let currentDb = null;
 let currentView = 'onboarding'; // 'onboarding' | 'dashboard' | 'transaction-form' | 'invoice' | 'reserves'
 let currentMonth = new Date().toISOString().substring(0, 7); // "YYYY-MM"
+let currentCardId = null; // Tracks the selected credit card inside Faturas view
 let isYearlySummaryActive = false;
 let transactionToEditId = null; // if not null, we are editing a transaction
 let isUnsavedEdits = false; // Tracks if modifications happened since last JSON backup export
@@ -25,7 +26,7 @@ const navTransaction = document.getElementById('nav-transaction');
 const navInvoice = document.getElementById('nav-invoice');
 const navReserves = document.getElementById('nav-reserves');
 
-// Core Bootsrap
+// Core Bootstrap
 document.addEventListener('DOMContentLoaded', () => {
   bootstrapApp();
 });
@@ -836,6 +837,12 @@ function createTransactionFormView() {
                 </div>
             </div>
 
+            <!-- REAL-TIME BILLING INVOICE CALCULATION BOX (Only shown for credit cards) -->
+            <div id="realtime-invoice-calc-box" class="invoice-cycle-meta-card" style="margin-top: 10px; border-color: var(--secondary-color); background-color: rgba(14, 165, 233, 0.04); display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--secondary-color);"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <div id="invoice-calc-text" style="color: var(--text-main); font-size: 12.5px; line-height: 1.4;"></div>
+            </div>
+
             <!-- Text Area Notes -->
             <div class="form-field">
                 <label for="tx-notes">Observações e Notas</label>
@@ -858,12 +865,19 @@ function createTransactionFormView() {
   const methodSelect = container.querySelector('#tx-method');
   const cardWrapper = container.querySelector('#card-selector-wrapper');
   const cardSelect = container.querySelector('#tx-card');
+  const dateInput = container.querySelector('#tx-date');
   const cancelBtn = container.querySelector('#btn-form-cancel');
+
+  // Trigger real-time invoice calculations
+  const triggerRealtimeCalc = () => {
+    updateRealtimeInvoiceCalculation(container);
+  };
 
   // Change category options dynamically when toggling Income/Expense
   typeSelect.addEventListener('change', (e) => {
     const selectedType = e.target.value;
     catSelect.innerHTML = filterCatOptions(selectedType);
+    triggerRealtimeCalc();
   });
 
   // Toggle card wrapper
@@ -875,7 +889,14 @@ function createTransactionFormView() {
       cardWrapper.style.display = 'none';
       cardSelect.required = false;
     }
+    triggerRealtimeCalc();
   });
+
+  cardSelect.addEventListener('change', triggerRealtimeCalc);
+  dateInput.addEventListener('change', triggerRealtimeCalc);
+
+  // Initial trigger
+  triggerRealtimeCalc();
 
   cancelBtn.addEventListener('click', () => {
     goTo('dashboard');
@@ -886,7 +907,7 @@ function createTransactionFormView() {
 
     const desc = container.querySelector('#tx-description').value;
     const amt = parseFloat(container.querySelector('#tx-amount').value);
-    const dateVal = container.querySelector('#tx-date').value;
+    const dateVal = dateInput.value;
     const catId = catSelect.value;
     const method = methodSelect.value;
     const cardId = method === 'credit_card' ? cardSelect.value : null;
@@ -932,6 +953,58 @@ function createTransactionFormView() {
 }
 
 /**
+ * Calculates and renders real-time credit card due date and monthly invoice calculations inside the form.
+ */
+function updateRealtimeInvoiceCalculation(formContainer) {
+  const methodSelect = formContainer.querySelector('#tx-method');
+  const cardSelect = formContainer.querySelector('#tx-card');
+  const dateInput = formContainer.querySelector('#tx-date');
+  const calcBox = formContainer.querySelector('#realtime-invoice-calc-box');
+  const calcText = formContainer.querySelector('#invoice-calc-text');
+
+  if (!methodSelect || !cardSelect || !dateInput || !calcBox || !calcText) return;
+
+  if (methodSelect.value === 'credit_card' && dateInput.value && cardSelect.value) {
+    const cards = LocalStore.getCreditCards();
+    const card = cards.find(c => c.id === cardSelect.value);
+    if (card) {
+      const parts = dateInput.value.split('-');
+      if (parts.length === 3) {
+        const [year, month, day] = parts.map(Number);
+        
+        let invoiceYear = year;
+        let invoiceMonth = month;
+        
+        if (day > card.closing_day) {
+          invoiceMonth += 1;
+          if (invoiceMonth > 12) {
+            invoiceMonth = 1;
+            invoiceYear += 1;
+          }
+        }
+        
+        let dueMonth = invoiceMonth + 1;
+        let dueYear = invoiceYear;
+        if (dueMonth > 12) {
+          dueMonth = 1;
+          dueYear += 1;
+        }
+        
+        const formattedInvoiceMonth = formatMonthLabel(`${invoiceYear}-${String(invoiceMonth).padStart(2, '0')}`);
+        const formattedDueDate = `${String(card.due_day).padStart(2, '0')}/${String(dueMonth).padStart(2, '0')}/${dueYear}`;
+        
+        calcText.innerHTML = `
+          Esta compra fechará na fatura de <strong>${formattedInvoiceMonth}</strong> e o pagamento (vencimento) será em <strong>${formattedDueDate}</strong>!
+        `;
+        calcBox.style.display = 'flex';
+        return;
+      }
+    }
+  }
+  calcBox.style.display = 'none';
+}
+
+/**
  * 4. Credit Card Invoice (Faturas) View
  */
 function createInvoiceView() {
@@ -940,16 +1013,36 @@ function createInvoiceView() {
 
   const cards = LocalStore.getCreditCards();
   if (cards.length === 0) {
-    container.innerHTML = `<div class="card-section">Nenhum cartão de crédito cadastrado no sistema.</div>`;
+    container.innerHTML = `
+      <div class="period-selector-row" style="margin-bottom: 24px;">
+          <h2>Faturas do Cartão</h2>
+          <button id="btn-create-card" class="btn-section-action" style="background-color: var(--primary-color); color: var(--text-white);">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>
+              Adicionar Cartão
+          </button>
+      </div>
+      <div class="card-section table-empty-placeholder">
+          <p>Nenhum cartão de crédito cadastrado no sistema.</p>
+          <button id="btn-quick-create-card" class="btn btn-primary" style="width: auto; margin-top: 14px;">Cadastrar Novo Cartão</button>
+      </div>
+      <div id="reserve-modal-layer"></div>
+    `;
+
+    // Bind triggers
+    container.querySelector('#btn-create-card').addEventListener('click', triggerCreateCardModal);
+    container.querySelector('#btn-quick-create-card').addEventListener('click', triggerCreateCardModal);
     return container;
   }
 
-  // Choose first active card
-  const selectedCardId = cards[0].id;
-  const card = cards[0];
+  // Choose selectedCardId from state. If not in list, default to first card
+  if (!currentCardId || !cards.find(c => c.id === currentCardId)) {
+    currentCardId = cards[0].id;
+  }
+
+  const card = cards.find(c => c.id === currentCardId);
 
   // Fetch transactions of Nubank in this specific fatura month
-  const cardTxs = LocalStore.resolveCreditCardInvoice(selectedCardId, currentMonth);
+  const cardTxs = LocalStore.resolveCreditCardInvoice(currentCardId, currentMonth);
 
   // Sum up fatura total
   const invoiceTotal = cardTxs.reduce((sum, t) => sum + parseFloat(t.amount), 0);
@@ -980,12 +1073,31 @@ function createInvoiceView() {
     });
   }
 
+  // Render HTML structure
   container.innerHTML = `
     <div class="period-selector-row" style="margin-bottom: 24px;">
         <h2>Fatura do Cartão</h2>
         
-        <div class="month-selector-widget">
-            <span class="active-month-label">Ciclo da Fatura: ${formatMonthLabel(currentMonth)}</span>
+        <button id="btn-create-card" class="btn-section-action" style="background-color: var(--primary-color); color: var(--text-white); padding: 10px 16px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>
+            Adicionar Cartão
+        </button>
+    </div>
+
+    <!-- Dropdowns filter grid -->
+    <div class="form-grid-2" style="margin-bottom: 24px;">
+        <div class="form-field">
+            <label for="invoice-card-filter">Selecione o Cartão</label>
+            <select id="invoice-card-filter" class="form-field">
+                ${cards.map(c => `<option value="${c.id}" ${c.id === currentCardId ? 'selected' : ''}>${escapeHTML(c.name)}</option>`).join('')}
+            </select>
+        </div>
+        <div class="form-field">
+            <label for="invoice-month-filter">Mês de Cobrança</label>
+            <select id="invoice-month-filter" class="form-field">
+                <!-- Populate 3 months around the current one for easy select -->
+                <option value="${currentMonth}">${formatMonthLabel(currentMonth)}</option>
+            </select>
         </div>
     </div>
 
@@ -993,7 +1105,7 @@ function createInvoiceView() {
         <!-- Left panel: limit info & card vizualizer -->
         <div class="invoice-card-panel">
             <div class="credit-card-mock">
-                <div class="card-mock-brand">Nubank</div>
+                <div class="card-mock-brand">${escapeHTML(card.name)}</div>
                 <div class="card-mock-chip">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="18" height="12" x="3" y="6" rx="2"/><line x1="3" x2="21" y1="10" y2="10"/><line x1="3" x2="21" y1="14" y2="14"/></svg>
                 </div>
@@ -1024,7 +1136,7 @@ function createInvoiceView() {
                 <div class="invoice-cycle-meta-card">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-color); margin-top: 2px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                     <div>
-                        <strong>Ciclo de faturamento:</strong> compras após o dia <strong>${card.closing_day}</strong> deste mês serão cobradas apenas na fatura seguinte.
+                        <strong>Ciclo de faturamento:</strong> compras após o dia <strong>${card.closing_day}</strong> deste mês serão cobradas na fatura seguinte. O vencimento desta fatura será em: <strong>${card.due_day}/${String(parseInt(currentMonth.split('-')[1]) % 12 + 1).padStart(2, '0')}/${currentMonth.split('-')[0]}</strong>.
                     </div>
                 </div>
             </div>
@@ -1054,7 +1166,20 @@ function createInvoiceView() {
             </div>
         </div>
     </div>
+
+    <!-- Modals backdrop layer -->
+    <div id="reserve-modal-layer"></div>
   `;
+
+  // Bind actions
+  const cardFilter = container.querySelector('#invoice-card-filter');
+  cardFilter.addEventListener('change', (e) => {
+    currentCardId = e.target.value;
+    render();
+  });
+
+  const btnCreateCard = container.querySelector('#btn-create-card');
+  btnCreateCard.addEventListener('click', triggerCreateCardModal);
 
   return container;
 }
@@ -1228,7 +1353,7 @@ function triggerReserveMovementModal(reserveId, type) {
 }
 
 /**
- * Renders a modular modal to create a new financial goal.
+ * Renders a modular modal to create a new financial goal manually.
  */
 function triggerCreateReserveModal() {
   const modalLayer = document.getElementById('reserve-modal-layer');
@@ -1274,20 +1399,92 @@ function triggerCreateReserveModal() {
     const rsvGoal = parseFloat(modalLayer.querySelector('#modal-rsv-goal').value);
 
     try {
-      const db = LocalStore.exportDatabase();
-      const newRsv = {
-        id: `rsv-${crypto.randomUUID()}`,
-        name: rsvName.trim(),
-        goal_amount: rsvGoal,
-        movements: []
-      };
+      LocalStore.addReserve({
+        name: rsvName,
+        goal_amount: rsvGoal
+      });
 
-      db.reserves.push(newRsv);
       alert('Nova meta de poupança criada com sucesso!');
       cleanModal();
-      updateDbAndAutosave(db);
+      updateDbAndAutosave(LocalStore.exportDatabase());
     } catch (err) {
       alert('Falha ao criar meta: ' + err.message);
+    }
+  });
+}
+
+/**
+ * Renders a modular modal to register a new credit card manually.
+ */
+function triggerCreateCardModal() {
+  const modalLayer = document.getElementById('reserve-modal-layer');
+  if (!modalLayer) return;
+
+  modalLayer.innerHTML = `
+    <div class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Cadastrar Novo Cartão de Crédito</h3>
+            </div>
+            <form id="modal-card-form" class="modal-body">
+                <div class="form-field">
+                    <label for="modal-card-name">Nome do Cartão *</label>
+                    <input type="text" id="modal-card-name" placeholder="Ex: Nubank" required autocomplete="off">
+                </div>
+                <div class="form-field">
+                    <label for="modal-card-limit">Limite de Crédito Total (R$) *</label>
+                    <input type="number" id="modal-card-limit" placeholder="Ex: 1500.00" step="0.01" min="1" required autocomplete="off">
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-field">
+                        <label for="modal-card-closing">Dia do Fechamento (1-31) *</label>
+                        <input type="number" id="modal-card-closing" placeholder="Ex: 28" min="1" max="31" required autocomplete="off">
+                    </div>
+                    <div class="form-field">
+                        <label for="modal-card-due">Dia do Vencimento (1-31) *</label>
+                        <input type="number" id="modal-card-due" placeholder="Ex: 5" min="1" max="31" required autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="form-actions-row" style="margin-top: 18px;">
+                    <button type="button" id="btn-modal-close" class="btn btn-secondary" style="background-color: var(--border-color); color: var(--text-main);">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Cadastrar Cartão</button>
+                </div>
+            </form>
+        </div>
+    </div>
+  `;
+
+  const form = modalLayer.querySelector('#modal-card-form');
+  const closeBtn = modalLayer.querySelector('#btn-modal-close');
+
+  const cleanModal = () => {
+    modalLayer.innerHTML = '';
+  };
+
+  closeBtn.addEventListener('click', cleanModal);
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const cardName = modalLayer.querySelector('#modal-card-name').value;
+    const cardLimit = parseFloat(modalLayer.querySelector('#modal-card-limit').value);
+    const cardClosing = parseInt(modalLayer.querySelector('#modal-card-closing').value);
+    const cardDue = parseInt(modalLayer.querySelector('#modal-card-due').value);
+
+    try {
+      const card = LocalStore.addCreditCard({
+        name: cardName,
+        limit: cardLimit,
+        closing_day: cardClosing,
+        due_day: cardDue
+      });
+
+      alert('Novo cartão de crédito cadastrado com sucesso!');
+      cleanModal();
+      currentCardId = card.id; // Auto-focus on the new card
+      updateDbAndAutosave(LocalStore.exportDatabase());
+    } catch (err) {
+      alert('Falha ao cadastrar cartão: ' + err.message);
     }
   });
 }

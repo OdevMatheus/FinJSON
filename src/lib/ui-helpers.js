@@ -82,3 +82,45 @@ export function getToneMeta(tone) {
       };
   }
 }
+
+/**
+ * Calculates the dynamic invoice month and the payment due date in Portuguese format.
+ * 
+ * @param {string} dateStr - Date string YYYY-MM-DD
+ * @param {number} closingDay - Credit card closing day (e.g., 28)
+ * @param {number} dueDay - Credit card due day (e.g., 5)
+ * @returns {Object|null}
+ */
+export function calculateInvoiceAndDueDate(dateStr, closingDay, dueDay) {
+  if (!dateStr || isNaN(closingDay) || isNaN(dueDay)) return null;
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return null;
+  const [year, month, day] = parts.map(Number);
+  
+  let invoiceYear = year;
+  let invoiceMonth = month;
+  
+  if (day > closingDay) {
+    invoiceMonth += 1;
+    if (invoiceMonth > 12) {
+      invoiceMonth = 1;
+      invoiceYear += 1;
+    }
+  }
+  
+  // Payment due date is next month after invoice month
+  let dueMonth = invoiceMonth + 1;
+  let dueYear = invoiceYear;
+  if (dueMonth > 12) {
+    dueMonth = 1;
+    dueYear += 1;
+  }
+  
+  const formattedInvoiceMonth = `${invoiceYear}-${String(invoiceMonth).padStart(2, '0')}`;
+  const formattedDueDate = `${String(dueDay).padStart(2, '0')}/${String(dueMonth).padStart(2, '0')}/${dueYear}`;
+  
+  return {
+    invoiceMonth: formattedInvoiceMonth,
+    dueDateStr: formattedDueDate
+  };
+}

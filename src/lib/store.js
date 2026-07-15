@@ -766,5 +766,75 @@ export const LocalStore = {
         _getCardInvoiceMonth(tx.date, card.closing_day) === yearMonth
       );
     }).sort((a, b) => b.date.localeCompare(a.date));
+  },
+
+  /**
+   * Add a new financial reserve goal manually.
+   * @param {Object} reserveData - { name, goal_amount }
+   * @returns {Object} Created reserve goal
+   */
+  addReserve(reserveData) {
+    const dbData = _readRaw();
+    if (!dbData) throw new Error('Database not initialized');
+
+    const { name, goal_amount } = reserveData;
+    if (!name || goal_amount === undefined) {
+      throw new Error('Nome e valor alvo da meta são obrigatórios.');
+    }
+
+    const id = `rsv-${crypto.randomUUID()}`;
+    const newRsv = {
+      id,
+      name: name.trim(),
+      goal_amount: parseFloat(goal_amount),
+      movements: []
+    };
+
+    if (!dbData.reserves) {
+      dbData.reserves = [];
+    }
+
+    dbData.reserves.push(newRsv);
+    _writeRaw(dbData);
+    return newRsv;
+  },
+
+  /**
+   * Add a new credit card manually.
+   * @param {Object} cardData - { name, limit, closing_day, due_day }
+   * @returns {Object} Created credit card
+   */
+  addCreditCard(cardData) {
+    const dbData = _readRaw();
+    if (!dbData) throw new Error('Database not initialized');
+
+    const { name, limit, closing_day, due_day } = cardData;
+    if (!name || limit === undefined || !closing_day || !due_day) {
+      throw new Error('Todos os campos do cartão (nome, limite, dia fechamento, dia vencimento) são obrigatórios.');
+    }
+
+    const cDay = parseInt(closing_day);
+    const dDay = parseInt(due_day);
+    if (cDay < 1 || cDay > 31 || dDay < 1 || dDay > 31) {
+      throw new Error('Os dias de fechamento e vencimento devem ser entre 1 e 31.');
+    }
+
+    const id = `card-${crypto.randomUUID()}`;
+    const newCard = {
+      id,
+      name: name.trim(),
+      limit: parseFloat(limit),
+      closing_day: cDay,
+      due_day: dDay,
+      active: true
+    };
+
+    if (!dbData.credit_cards) {
+      dbData.credit_cards = [];
+    }
+
+    dbData.credit_cards.push(newCard);
+    _writeRaw(dbData);
+    return newCard;
   }
 };
