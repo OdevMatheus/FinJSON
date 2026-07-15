@@ -1,8 +1,10 @@
 <div align="center">
 
+[🌍 Ler em Português (Read in Portuguese)](docs/README-PT.md)
+
 # 💎 FinJSON Pro V3
 
-O gerenciador financeiro pessoal de alto padrão, **100% Local-First** e **orientado a arquivos portáveis (JSON)**.
+The premium personal finance manager, **100% Local-First** and **portable JSON-file oriented**.
 
 ---
 
@@ -10,133 +12,134 @@ O gerenciador financeiro pessoal de alto padrão, **100% Local-First** e **orien
 [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
 [![AI-Powered](https://img.shields.io/badge/AI--Powered-FF6F61?style=for-the-badge&logo=google&logoColor=white)](https://github.com/google-gemini/gemini-cli)
-[![Local-First](https://img.shields.io/badge/Local--First-0052CC?style=for-the-badge&logo=databricks&logoColor=white)](#-arquitetura-local-first)
+[![Local-First](https://img.shields.io/badge/Local--First-0052CC?style=for-the-badge&logo=databricks&logoColor=white)](#-local-first-architecture)
 
 </div>
 
 ---
 
-## 🤖 Showcase de Desenvolvimento com IA (Agentic & TDD)
+## 🤖 AI-Agent Driven & TDD Showcase
 
-O **FinJSON Pro** é muito mais do que apenas uma carteira de despesas: ele foi **desenvolvido integralmente por Agentes de Inteligência Artificial de Engenharia de Software (Gemini CLI)** sob o modo **Auto-Edit**. 
+**FinJSON Pro** is much more than a simple expenses tracker: it was **developed entirely by AI Software Engineering Agents (Gemini CLI)** operating under **Auto-Edit** mode.
 
-Este projeto atua como um repositório demonstrativo de excelência na interação máquina-código, aplicando práticas de ponta em engenharia cognitiva:
-- **Test-Driven Development (TDD) Autônomo:** Toda a inteligência de negócios, cálculos de fechamento de faturas em meses curtos (como Fevereiro) e travas de retroatividade foram escritos e validados por **29 testes unitários estritos** executados sob o Vitest antes de qualquer renderização de interface.
-- **Integração de Skills Especializadas:** O agente de desenvolvimento utilizou e ativou habilidades (skills) modulares especializadas (como `ui-ux-pro-max`, `javascript-pro`, `clean-code` e `readme-wizard`) para projetar os fluxos com consistência de dados, prevenção de injeção XSS e design semântico.
-- **Higienização Visual de UI/UX:** A interface do aplicativo segue regras de design rigorosas. Não há uso de emojis em botões e menus principais (apenas SVGs inline), as transições de microinterações de hover duram entre `150-300ms` sem alterar a altura ou deslocamento físico de outros elementos no DOM, e o layout herda classes responsivas com alinhamento pixel-perfect.
-
----
-
-## 🎯 Objetivo do Projeto
-
-O objetivo principal do **FinJSON Pro** é dar ao usuário **soberania absoluta sobre os seus dados financeiros**. 
-
-Na era dos SaaS por assinatura e vazamentos de dados, o aplicativo propõe um ecossistema **Local-First puro**:
-1. **Nenhum Servidor / Sem Conta:** A aplicação roda 100% localmente no navegador (`client-side`). Não há servidores adicionais, bancos de dados em nuvem ou requisições REST pela rede.
-2. **Navegador como Banco de Dados:** Toda a persistência de configurações, metas, cartões e lançamentos utiliza a chave `finjson_db` sob o `LocalStorage` do próprio navegador.
-3. **Seus dados no seu Drive:** Suas finanças pertencem a você. O sistema é baseado em um fluxo físico de **Exportar/Importar backups em formato JSON portátil**. Ao final do dia, você exporta o arquivo e o guarda na sua pasta do Google Drive, Dropbox, ou pen drive de forma portátil.
+This project serves as a model showcase of human-agent collaboration and machine-code engineering excellence, adhering to rigorous cognitive and architectural standards:
+- **Autonomous Test-Driven Development (TDD):** All core calculations, credit card billing cycles, short-month adjustments (like the February edge case), and retroactivity protections were designed and validated through **29 strict unit tests** running under Vitest before any UI component was rendered.
+- **Specialized Cognitive Skills:** The engineering agent utilized and activated modular specialized skills (such as `ui-ux-pro-max`, `javascript-pro`, `clean-code`, and `readme-wizard`) to construct type-safe state transitions, robust LocalStorage caching, and thorough anti-XSS string sanitization.
+- **UI/UX Craftsmanship:** The application layout strictly enforces visual polish. Emojis are never used on primary buttons or navigation tabs (clean inline SVGs only), hover micro-animations last exactly `150-300ms` without causing layout shifting, and all touch targets maintain a minimum size of `44x44px`.
 
 ---
 
-## 🌟 Diferenciais da Arquitetura V3
+## 🎯 Project Goal
 
-- **Lançamentos Mensais Recorrentes Inteligentes:** Você configura suas contas (despesas) e recibos (receitas) uma única vez. Ao visualizar qualquer mês no futuro, o processador automático gera os lançamentos de forma transparente no dia agendado.
-- **Ajuste Automatizado de Calendário (O "Efeito Fevereiro"):** Lógicas matemáticas refinadas garantem que compras em cartões com fechamento próximo ao fim do mês (como dia 28) caiam na fatura certa mesmo durante meses curtos como Fevereiro (desviando o dia da compra para o dia 1º do mês corrente para evitar furos).
-- **Proteção de Retroatividade:** O cadastro de novas recorrências armazena o mês de criação (`start_month`), garantindo que o seu histórico e relatórios de meses anteriores nunca sejam alterados por regras criadas no presente.
-- **Poupados Isolados e Controle de Metas:** Guarde dinheiro para metas de poupança no painel de **Reservas Ativas**. Depósitos podem ser marcados para ignorar o saldo principal, registrando o progresso da meta sem inflar ou descontar o fluxo de caixa regular.
-- **Visual "Midnight Slate" Premium:** Uma interface esteticamente elegante e luxuosa inspirada em designs industriais escuros modernos.
+The primary goal of **FinJSON Pro** is to give users **absolute sovereignty over their financial data**.
+
+In a web landscape dominated by subscription-based SaaS and frequent cloud database breaches, this application advocates for a **pure Local-First ecosystem**:
+1. **Zero Backend / No Accounts:** The application runs 100% on the client-side. No node servers, no cloud databases, and zero network calls for database transactions.
+2. **Browser as the Database:** All settings, custom cards, recurring bills, and savings reserves are persisted locally using the `'finjson_db'` key under your browser's `LocalStorage`.
+3. **Your Data in Your Drive:** Your data belongs to you. Simply click **"Export Backup"** at any time to download a portable JSON file (`finjson_backup_YYYY-MM-DD.json`) that you can store securely in your own Google Drive, Dropbox, or offline storage.
 
 ---
 
-## 🏛️ Estrutura do Repositório
+## 🌟 V3 Architecture Highlights
+
+- **Intelligent Recurring Bills & Receipts:** Set your monthly subscriptions (expenses) and salary schedules (income) once. Whenever you view any month in the future, the background processor automatically generates actual transaction records on the agendated day.
+- **Automated Calendar Cycle Correction (The "February Effect"):** Smart billing algorithms ensure that credit card transactions scheduled after the closing day fall into the correct billing invoice even during short months like February (by deviating the purchase date to the 1st of the target month to prevent cycle mismatches).
+- **Retroactivity Protection:** A registered recurrence tracks its creation month (`start_month`), guaranteeing that your closed historical months' balances are never altered by rules created in the present.
+- **Isolated Savings & Goal Tracking:** Allocate money to savings reserves on the **Active Reserves** panel. Individual deposits can be flagged to "Ignore Balance," allowing you to track meta progress without deducting from your regular monthly cash flow.
+- **Premium "Midnight Slate" Dark Theme:** A visually rich dark editorial interface built using custom CSS variables, rigid flex grids, and subtle glowing borders.
+
+---
+
+## 🏛️ Repository Structure
 
 ```text
 FinJSON/
-├── docs/                 # Documentos de especificação técnica e planos de dados
+├── docs/                 # Technical specifications and plans
+│   ├── README-PT.md      # Portuguese documentation
 │   ├── plano-estrutura-json.md
 │   ├── plano-main-js.md
 │   └── plano-store-js.md
-├── public/               # Ativos estáticos públicos (Favicons, ícones)
-│   ├── favicon.svg       # Ícone de cabeçalho do navegador (Vetor)
-│   └── icons.svg         # Biblioteca de ícones vetoriais adicionais
+├── public/               # Public static assets
+│   ├── favicon.svg       # Browser header icon (Vector SVG)
+│   └── icons.svg         # Additional public SVGs
 ├── src/
 │   ├── lib/
-│   │   ├── store.js      # CORE DATABASE ENGINE: Lógica LocalStorage, faturas e processamento
-│   │   ├── store.test.js # SUÍTE DE TESTES: 29 testes unitários validando a engine no Vitest
-│   │   └── ui-helpers.js # UI HELPERS: Sanitização anti-XSS, formatação e layout de células
-│   ├── main.js           # ORQUESTRADOR UI: Renderização das views (Onboarding, Painel, Mensais, Reservas)
-│   └── style.css         # ESTILO: Dark theme, grid layouts, classes responsivas e micro-animações
-├── index.html            # Estrutura HTML única com SVGs inline e esqueleto do cabeçalho
-├── package.json          # Dependências exclusivas de desenvolvimento (Vite + Vitest)
-├── vite.config.js        # Configurações de porta estática do Vite
-└── GEMINI.md             # Instruções consolidadas e diretrizes de desenvolvimento
+│   │   ├── store.js      # CORE DATABASE ENGINE: Handles LocalStorage, credit cycles, and recalculations
+│   │   ├── store.test.js # TEST SUITE: 29 unit tests validating core math and logic in Vitest
+│   │   └── ui-helpers.js # UI HELPERS: Anti-XSS sanitization, curreny formatting, and layout cells
+│   ├── main.js           # UI ORCHESTRATOR: Renders SPA views (Onboarding, Dashboard, Recurring, Reserves)
+│   └── style.css         # STYLING: Premium Midnight Dark Theme, flex grids, and responsive constraints
+├── index.html            # Core HTML5 index with inline SVGs and esqueleto loaders
+├── package.json          # Dev dependencies (Vite + Vitest)
+├── vite.config.js        # Native Vite static port configurations
+└── GEMINI.md             # Consolidaded agent development mandates and context
 ```
 
 ---
 
-## 🚀 Como Executar o Projeto Localmente
+## 🚀 How to Run Locally
 
-Você precisará apenas do **Node.js** instalado na sua máquina para subir o servidor estático do Vite durante o desenvolvimento:
+You only need **Node.js** installed on your machine to launch Vite's static development server:
 
-### 1. Instalar as dependências
-Abra o terminal na raiz do projeto e execute:
+### 1. Install dependencies
+Open your terminal in the repository's root and run:
 ```bash
 npm install
 ```
 
-### 2. Iniciar o Servidor de Desenvolvimento
-Para rodar a aplicação localmente, execute o comando:
+### 2. Launch the Development Server
+To start the application locally, run:
 ```bash
 npm run dev
 ```
 
-O console exibirá o link de acesso local:
+The console will display your local access link:
 ```text
   VITE v8.1.4  ready in 106 ms
 
   ➜  Local:   http://localhost:5173/
 ```
-Abra **[http://localhost:5173/](http://localhost:5173/)** no seu navegador para utilizar o sistema.
+Open **[http://localhost:5173/](http://localhost:5173/)** in your web browser to use the application.
 
-### 3. Rodar a Suíte de Testes (Vitest)
-Para executar a suíte completa de **29 testes unitários** que validam a consistência matemática e financeira:
+### 3. Run the Unit Test Suite (Vitest)
+To execute all **29 unit tests** that validate mathematical and billing cycle integrity:
 ```bash
 npm test
 ```
 
-### 4. Gerar Build de Produção
-Para compilar a aplicação em arquivos HTML/CSS/JS estáticos otimizados (prontos para serem hospedados de graça em plataformas como Vercel, Netlify ou GitHub Pages), execute:
+### 4. Build for Production
+To compile the application into fully optimized, static HTML/CSS/JS assets (ready to be hosted for free on Vercel, Netlify, or GitHub Pages), execute:
 ```bash
 npm run build
 ```
-Os arquivos prontos serão gerados na pasta `/dist`.
+The compiled, ready-to-deploy assets will be generated in the `/dist` folder.
 
 ---
 
-## 🎮 Guia de Uso e Importação/Exportação
+## 🎮 Usage Guide & Data Portability
 
-1. **Primeiro Acesso (Onboarding):**
-   * Ao abrir a página pela primeira vez, o sistema detectará que o banco local está vazio e exibirá uma tela de onboarding em modo escuro.
-   * **Iniciar do Zero:** Clique nesta opção para criar uma carteira limpa pré-carregada com 7 categorias básicas utilizando melhores práticas financeiras (Salário, Renda Extra, Despesas Fixas, Alimentação, Serviços, Lazer e Cuidados Pessoais).
-   * **Restaurar Backup:** Selecione ou arraste um arquivo de backup `db.json` gerado anteriormente para continuar de onde parou.
-2. **Operações Diárias:**
-   * Cadastre receitas ou despesas preenchendo o formulário. O sistema calcula automaticamente o Saldo Líquido, Receitas e Despesas totais do mês selecionado.
-   * Cadastre despesas e receitas recorrentes na aba **"Mensais"** (marcando-as em contas de saldo ou cartões de crédito). O sistema se encarrega de preencher os meses seguintes para você.
-   * Guarde ou resgate dinheiro do painel de **Reservas Ativas** para acompanhar o progresso de suas metas de poupança com barras visuais dinâmicas.
-3. **Transportando seus Dados:**
-   * Ao final do dia ou quando desejar fazer um backup, clique no botão **"Exportar Dados"** no canto superior direito do cabeçalho.
-   * O navegador iniciará o download de um arquivo `finjson_backup_YYYY-MM-DD.json`. Guarde este arquivo em um local seguro (no seu Google Drive ou Dropbox) e use-o para carregar seus dados em qualquer outro computador ou celular.
+1. **First-time Access (Onboarding):**
+   * If you open the application with a blank database, a dark onboarding screen will guide you through the initial setup.
+   * **Start Fresh:** Click this option to seed a clean database pre-populated with 7 default categories designed around financial best practices (Salary, Extra Income, Fixed Expenses, Food, Services, Leisure, and Personal Care).
+   * **Restore Backup:** Select or drag an existing `db.json` backup file to resume right where you left off.
+2. **Daily Transactions:**
+   * Log income and expenses using the transaction form. The dashboard immediately recalculates your Net Liquid Balance, Total Revenue, and Total Expenses for the selected period.
+   * Log monthly configurations on the **"Mensais"** tab. The system will handle auto-billing and receipts for any subsequent months.
+   * Save or withdraw money on the **Active Reserves** panel to track your progress visually.
+3. **Transporting Your Data:**
+   * At the end of the day or whenever you want to secure a backup, click **"Export Backup"** in the top-right header actions.
+   * The browser will download a physical file named `finjson_backup_YYYY-MM-DD.json`. Save this file securely in your cloud drive (Google Drive, Dropbox) or physical key, and load it in any other browser or mobile device to restore your full history instantly.
 
 ---
 
-## 🔒 Licença
+## 🔒 License
 
-Este projeto é open-source e livre para fins de estudo, organização financeira pessoal e demonstração de práticas de engenharia de software baseadas em IA.
+This project is open-source and free for educational study, personal finance planning, and demonstrating agentic software engineering practices.
 
 ---
 
 <div align="center">
 
-*Desenvolvido com excelência técnica em uma colaboração Humano-Agente.* 🚀
+*Engineered with technical excellence in a collaborative Human-Agent session.* 🚀
 
 </div>
