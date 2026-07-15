@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinJSON Pro - Gestão Financeira Local-First</title>
+    <title>Finjson - Gestão Financeira Local-First</title>
     <!-- Google Fonts for modern typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <!-- App Header (Only visible when DB is initialized/active) -->
+    </head>
+    <body style="visibility: hidden;"> <!-- Block FOUC -->
+    <!-- Static Header always visible for SPA layout -->
     <header id="app-header" class="main-header" style="display: none;">
         <div class="header-container">
             <div class="header-brand">
                 <span class="brand-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-briefcase"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                 </span>
-                <span class="brand-name">FinJSON Pro</span>
+                <span class="brand-name">Finjson</span>
             </div>
             
             <nav class="main-nav">
@@ -71,7 +71,7 @@
 
     <!-- Unified dynamic SPA container -->
     <main id="app" class="app-fullscreen-container">
-        <div class="static-loading">Carregando FinJSON Pro...</div>
+        <div class="static-loading">Carregando Finjson...</div>
     </main>
 
     <!-- Pure ESM script module entrypoint -->

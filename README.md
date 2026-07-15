@@ -2,7 +2,7 @@
 
 [🌍 Ler em Português (Read in Portuguese)](docs/README-PT.md)
 
-# 💎 FinJSON Pro V3
+# 💎 Finjson
 
 The premium personal finance manager, **100% Local-First** and **portable JSON-file oriented**.
 
@@ -20,7 +20,7 @@ The premium personal finance manager, **100% Local-First** and **portable JSON-f
 
 ## 🤖 AI-Agent Driven & TDD Showcase
 
-**FinJSON Pro** is much more than a simple expenses tracker: it was **developed entirely by AI Software Engineering Agents (Gemini CLI)** operating under **Auto-Edit** mode.
+**Finjson** is much more than a simple expenses tracker: it was **developed entirely by AI Software Engineering Agents (Gemini CLI)** operating under **Auto-Edit** mode.
 
 This project serves as a model showcase of human-agent collaboration and machine-code engineering excellence, adhering to rigorous cognitive and architectural standards:
 - **Autonomous Test-Driven Development (TDD):** All core calculations, credit card billing cycles, short-month adjustments (like the February edge case), and retroactivity protections were designed and validated through **29 strict unit tests** running under Vitest before any UI component was rendered.
@@ -31,7 +31,7 @@ This project serves as a model showcase of human-agent collaboration and machine
 
 ## 🎯 Project Goal
 
-The primary goal of **FinJSON Pro** is to give users **absolute sovereignty over their financial data**.
+The primary goal of **Finjson** is to give users **absolute sovereignty over their financial data**.
 
 In a web landscape dominated by subscription-based SaaS and frequent cloud database breaches, this application advocates for a **pure Local-First ecosystem**:
 1. **Zero Backend / No Accounts:** The application runs 100% on the client-side. No node servers, no cloud databases, and zero network calls for database transactions.
@@ -53,7 +53,7 @@ In a web landscape dominated by subscription-based SaaS and frequent cloud datab
 ## 🏛️ Repository Structure
 
 ```text
-FinJSON/
+Finjson/
 ├── docs/                 # Technical specifications and plans
 │   ├── README-PT.md      # Portuguese documentation
 │   ├── plano-estrutura-json.md

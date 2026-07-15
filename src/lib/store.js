@@ -1,5 +1,5 @@
 /**
- * FinJSON Pro V3 - Local-First Database Engine
+ * Finjson - Local-First Database Engine
  * 
  * Handles all CRUD operations, schema migrations, credit card billing cycles,
  * reserve goals calculations, and monthly caching.

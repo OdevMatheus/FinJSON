@@ -1,5 +1,5 @@
 /**
- * FinJSON Pro V3 - UI Helper Utilities
+ * Finjson - UI Helper Utilities
  * 
  * Reusable layout cells, currency formatters, and HTML sanitization.
  * 

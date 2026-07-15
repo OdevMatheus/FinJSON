@@ -256,7 +256,7 @@ function createOnboardingView() {
         <span class="onboarding-brand-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
         </span>
-        <h2>Bem-vindo ao FinJSON Pro</h2>
+        <h2>Bem-vindo ao Finjson</h2>
         <p>Sua carteira financeira local, 100% privada e portátil.</p>
     </div>
     

@@ -2,7 +2,7 @@
 
 [🌍 Read this in English (Ler em Inglês)](../README.md)
 
-# 💎 FinJSON Pro V3
+# 💎 Finjson
 
 O gerenciador financeiro pessoal de alto padrão, **100% Local-First** e **orientado a arquivos portáveis (JSON)**.
 
@@ -20,7 +20,7 @@ O gerenciador financeiro pessoal de alto padrão, **100% Local-First** e **orien
 
 ## 🤖 Showcase de Desenvolvimento com IA (Agentic & TDD)
 
-O **FinJSON Pro** é muito mais do que apenas uma carteira de despesas: ele foi **desenvolvido integralmente por Agentes de Inteligência Artificial de Engenharia de Software (Gemini CLI)** sob o modo **Auto-Edit**. 
+O **Finjson** é muito mais do que apenas uma carteira de despesas: ele foi **desenvolvido integralmente por Agentes de Inteligência Artificial de Engenharia de Software (Gemini CLI)** sob o modo **Auto-Edit**. 
 
 Este projeto atua como um repositório demonstrativo de excelência na interação máquina-código, aplicando práticas de ponta em engenharia cognitiva:
 - **Test-Driven Development (TDD) Autônomo:** Toda a inteligência de negócios, cálculos de fechamento de faturas em meses curtos (como Fevereiro) e travas de retroatividade foram escritos e validados por **29 testes unitários estritos** executados sob o Vitest antes de qualquer renderização de interface.
@@ -31,7 +31,7 @@ Este projeto atua como um repositório demonstrativo de excelência na interaç�
 
 ## 🎯 Objetivo do Projeto
 
-O objetivo principal do **FinJSON Pro** é dar ao usuário **soberania absoluta sobre os seus dados financeiros**. 
+O objetivo principal do **Finjson** é dar ao usuário **soberania absoluta sobre os seus dados financeiros**. 
 
 Na era dos SaaS por assinatura e vazamentos de dados, o aplicativo propõe um ecossistema **Local-First puro**:
 1. **Nenhum Servidor / Sem Conta:** A aplicação roda 100% localmente no navegador (`client-side`). Não há servidores adicionais, bancos de dados em nuvem ou requisições REST pela rede.
@@ -53,7 +53,7 @@ Na era dos SaaS por assinatura e vazamentos de dados, o aplicativo propõe um ec
 ## 🏛️ Estrutura do Repositório
 
 ```text
-FinJSON/
+Finjson/
 ├── docs/                 # Documentos de especificação técnica e planos de dados
 │   ├── README-PT.md      # Documentação do projeto em Português
 │   ├── plano-estrutura-json.md
