@@ -969,12 +969,44 @@ function createTransactionFormView() {
                     </select>
                 </div>
                 
-                <!-- Conditional Card Selector (Visible only when method is credit_card) -->
-                <div class="form-field" id="card-selector-wrapper" style="display: ${tx.payment_method === 'credit_card' ? 'block' : 'none'};">
-                    <label for="tx-card">Qual Cartão de Crédito? *</label>
-                    <select id="tx-card">
-                        ${cards.map(c => `<option value="${c.id}" ${c.id === tx.credit_card_id ? 'selected' : ''}>${escapeHTML(c.name)} (Fechamento: dia ${c.closing_day})</option>`).join('')}
-                    </select>
+                <div style="display: none;">
+                    <select id="tx-card-legacy-placeholder"></select>
+                </div>
+            </div>
+
+            <!-- Conditional Credit Card Fields (Visible only when method is credit_card) -->
+            <div id="credit-card-fields-container" style="display: ${tx.payment_method === 'credit_card' ? 'block' : 'none'};">
+                <div class="form-grid-2" style="margin-bottom: 20px;">
+                    <div class="form-field">
+                        <label for="tx-card">Qual Cartão de Crédito? *</label>
+                        <select id="tx-card">
+                            ${cards.map(c => `<option value="${c.id}" ${c.id === tx.credit_card_id ? 'selected' : ''}>${escapeHTML(c.name)} (Fechamento: dia ${c.closing_day})</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="tx-installments">Número de Parcelas *</label>
+                        ${isEditing && tx.installment && tx.installment.total > 1 ? `
+                            <div style="background-color: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 14px; font-size: 13.5px; color: var(--text-main); font-weight: 500; height: 42px; display: flex; align-items: center;">
+                                Parcela ${tx.installment.current} de ${tx.installment.total} (Não editável)
+                            </div>
+                            <input type="hidden" id="tx-installments" value="1">
+                        ` : `
+                            <select id="tx-installments">
+                                <option value="1" ${!tx.installment || tx.installment.total === 1 ? 'selected' : ''}>1x (À vista)</option>
+                                <option value="2" ${tx.installment && tx.installment.total === 2 ? 'selected' : ''}>2x</option>
+                                <option value="3" ${tx.installment && tx.installment.total === 3 ? 'selected' : ''}>3x</option>
+                                <option value="4" ${tx.installment && tx.installment.total === 4 ? 'selected' : ''}>4x</option>
+                                <option value="5" ${tx.installment && tx.installment.total === 5 ? 'selected' : ''}>5x</option>
+                                <option value="6" ${tx.installment && tx.installment.total === 6 ? 'selected' : ''}>6x</option>
+                                <option value="7" ${tx.installment && tx.installment.total === 7 ? 'selected' : ''}>7x</option>
+                                <option value="8" ${tx.installment && tx.installment.total === 8 ? 'selected' : ''}>8x</option>
+                                <option value="9" ${tx.installment && tx.installment.total === 9 ? 'selected' : ''}>9x</option>
+                                <option value="10" ${tx.installment && tx.installment.total === 10 ? 'selected' : ''}>10x</option>
+                                <option value="11" ${tx.installment && tx.installment.total === 11 ? 'selected' : ''}>11x</option>
+                                <option value="12" ${tx.installment && tx.installment.total === 12 ? 'selected' : ''}>12x</option>
+                            </select>
+                        `}
+                    </div>
                 </div>
             </div>
 
@@ -1004,10 +1036,12 @@ function createTransactionFormView() {
   const typeSelect = container.querySelector('#tx-type');
   const catSelect = container.querySelector('#tx-category');
   const methodSelect = container.querySelector('#tx-method');
-  const cardWrapper = container.querySelector('#card-selector-wrapper');
+  const cardFieldsContainer = container.querySelector('#credit-card-fields-container');
   const cardSelect = container.querySelector('#tx-card');
   const dateInput = container.querySelector('#tx-date');
   const cancelBtn = container.querySelector('#btn-form-cancel');
+  const installmentsSelect = container.querySelector('#tx-installments');
+  const amountInput = container.querySelector('#tx-amount');
 
   // Trigger real-time invoice calculations
   const triggerRealtimeCalc = () => {
@@ -1024,17 +1058,19 @@ function createTransactionFormView() {
   // Toggle card wrapper
   methodSelect.addEventListener('change', (e) => {
     if (e.target.value === 'credit_card') {
-      cardWrapper.style.display = 'block';
-      cardSelect.required = true;
+      cardFieldsContainer.style.display = 'block';
+      if (cardSelect) cardSelect.required = true;
     } else {
-      cardWrapper.style.display = 'none';
-      cardSelect.required = false;
+      cardFieldsContainer.style.display = 'none';
+      if (cardSelect) cardSelect.required = false;
     }
     triggerRealtimeCalc();
   });
 
-  cardSelect.addEventListener('change', triggerRealtimeCalc);
+  if (cardSelect) cardSelect.addEventListener('change', triggerRealtimeCalc);
   dateInput.addEventListener('change', triggerRealtimeCalc);
+  if (installmentsSelect) installmentsSelect.addEventListener('change', triggerRealtimeCalc);
+  if (amountInput) amountInput.addEventListener('input', triggerRealtimeCalc);
 
   // Initial trigger
   triggerRealtimeCalc();
@@ -1052,6 +1088,7 @@ function createTransactionFormView() {
     const catId = catSelect.value;
     const method = methodSelect.value;
     const cardId = method === 'credit_card' ? cardSelect.value : null;
+    const installmentsVal = container.querySelector('#tx-installments') ? parseInt(container.querySelector('#tx-installments').value) : 1;
     const notesVal = container.querySelector('#tx-notes').value;
 
     try {
@@ -1075,6 +1112,7 @@ function createTransactionFormView() {
           date: dateVal,
           payment_method: method,
           credit_card_id: cardId,
+          installments: installmentsVal,
           notes: notesVal
         });
       }
@@ -1102,6 +1140,8 @@ function updateRealtimeInvoiceCalculation(formContainer) {
   const dateInput = formContainer.querySelector('#tx-date');
   const calcBox = formContainer.querySelector('#realtime-invoice-calc-box');
   const calcText = formContainer.querySelector('#invoice-calc-text');
+  const installmentsSelect = formContainer.querySelector('#tx-installments');
+  const amountInput = formContainer.querySelector('#tx-amount');
 
   if (!methodSelect || !cardSelect || !dateInput || !calcBox || !calcText) return;
 
@@ -1134,9 +1174,29 @@ function updateRealtimeInvoiceCalculation(formContainer) {
         const formattedInvoiceMonth = formatMonthLabel(`${invoiceYear}-${String(invoiceMonth).padStart(2, '0')}`);
         const formattedDueDate = `${String(card.due_day).padStart(2, '0')}/${String(dueMonth).padStart(2, '0')}/${dueYear}`;
         
-        calcText.innerHTML = `
-          Esta compra fechará na fatura de <strong>${formattedInvoiceMonth}</strong> e o pagamento (vencimento) será em <strong>${formattedDueDate}</strong>!
-        `;
+        const installmentsCount = installmentsSelect ? parseInt(installmentsSelect.value) : 1;
+        const amount = amountInput ? parseFloat(amountInput.value) : 0;
+
+        if (installmentsCount > 1 && !isNaN(amount) && amount > 0) {
+          // Calculation of installments split
+          const baseAmount = Math.floor((amount / installmentsCount) * 100) / 100;
+          const remainder = Math.round((amount - (baseAmount * installmentsCount)) * 100);
+          const inst1 = baseAmount + (remainder > 0 ? 0.01 : 0);
+          const instOthers = baseAmount;
+          
+          let explanationText = '';
+          if (remainder > 0) {
+            explanationText = `Dividido em <strong>${installmentsCount} parcelas</strong>: a 1ª de <strong>${formatCurrency(inst1)}</strong> na fatura de <strong>${formattedInvoiceMonth}</strong> e as outras ${installmentsCount - 1} de <strong>${formatCurrency(instOthers)}</strong> nos meses seguintes. Vencimento em <strong>${formattedDueDate}</strong>!`;
+          } else {
+            explanationText = `Dividido em <strong>${installmentsCount} parcelas</strong> de <strong>${formatCurrency(instOthers)}</strong>. A primeira parcela fechará na fatura de <strong>${formattedInvoiceMonth}</strong> com vencimento em <strong>${formattedDueDate}</strong>!`;
+          }
+
+          calcText.innerHTML = explanationText;
+        } else {
+          calcText.innerHTML = `
+            Esta compra fechará na fatura de <strong>${formattedInvoiceMonth}</strong> e o pagamento (vencimento) será em <strong>${formattedDueDate}</strong>!
+          `;
+        }
         calcBox.style.display = 'flex';
         return;
       }

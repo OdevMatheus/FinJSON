@@ -77,6 +77,93 @@ function _getCardInvoiceMonth(dateStr, closingDay) {
 }
 
 /**
+ * Splits a total amount into a specific number of installments, distributing
+ * the remainder cents to the first installments so that the sum is exact.
+ *
+ * @private
+ * @param {number} totalAmount
+ * @param {number} installmentsCount
+ * @returns {Array<number>} Array of installment amounts
+ */
+function _splitAmount(totalAmount, installmentsCount) {
+  const baseAmount = Math.floor((totalAmount / installmentsCount) * 100) / 100;
+  const amounts = Array(installmentsCount).fill(baseAmount);
+  // Distribute the remaining cents to the first installments
+  let remainder = Math.round((totalAmount - (baseAmount * installmentsCount)) * 100);
+  for (let i = 0; i < remainder; i++) {
+    amounts[i] = parseFloat((amounts[i] + 0.01).toFixed(2));
+  }
+  return amounts;
+}
+
+/**
+ * Calculates the exact date of a subsequent installment (0-indexed)
+ * ensuring it falls in the correct monthly credit card invoice cycle,
+ * accounting for month length and the "February Effect".
+ *
+ * @private
+ * @param {string} purchaseDateStr - YYYY-MM-DD
+ * @param {Object} card - The credit card object
+ * @param {number} index - 0-indexed installment index
+ * @returns {string} The installment date formatted as YYYY-MM-DD
+ */
+function _calculateInstallmentDate(purchaseDateStr, card, index) {
+  const [pYear, pMonth, pDay] = purchaseDateStr.split('-').map(Number);
+  
+  if (index === 0) {
+    return purchaseDateStr; // First installment is always the original purchase date
+  }
+
+  // Get initial invoice month
+  const initialInvoiceMonthStr = _getCardInvoiceMonth(purchaseDateStr, card.closing_day);
+  const [initYear, initMonth] = initialInvoiceMonthStr.split('-').map(Number);
+
+  // Target invoice month is initialInvoiceMonth + index
+  let targetInvoiceMonth = initMonth + index;
+  let targetInvoiceYear = initYear;
+  while (targetInvoiceMonth > 12) {
+    targetInvoiceMonth -= 12;
+    targetInvoiceYear += 1;
+  }
+  const targetInvoiceMonthStr = `${targetInvoiceYear}-${String(targetInvoiceMonth).padStart(2, '0')}`;
+
+  // We want to construct a date that results in targetInvoiceMonthStr under _getCardInvoiceMonth
+  // Case 1: pDay <= card.closing_day
+  // The transaction date should be in the target invoice month itself, with pDay
+  if (pDay <= card.closing_day) {
+    const maxDays = new Date(targetInvoiceYear, targetInvoiceMonth, 0).getDate();
+    const finalDay = Math.min(pDay, maxDays);
+    const dateStr = `${targetInvoiceYear}-${String(targetInvoiceMonth).padStart(2, '0')}-${String(finalDay).padStart(2, '0')}`;
+    // Verify it maps to the correct invoice month
+    if (_getCardInvoiceMonth(dateStr, card.closing_day) === targetInvoiceMonthStr) {
+      return dateStr;
+    }
+  } else {
+    // Case 2: pDay > card.closing_day
+    // The transaction date should be in the month before the target invoice month, with pDay
+    let prevMonth = targetInvoiceMonth - 1;
+    let prevYear = targetInvoiceYear;
+    if (prevMonth < 1) {
+      prevMonth = 12;
+      prevYear -= 1;
+    }
+    const maxDaysPrev = new Date(prevYear, prevMonth, 0).getDate();
+    if (maxDaysPrev > card.closing_day) {
+      const finalDay = Math.min(pDay, maxDaysPrev);
+      const dateStr = `${prevYear}-${String(prevMonth).padStart(2, '0')}-${String(finalDay).padStart(2, '0')}`;
+      if (_getCardInvoiceMonth(dateStr, card.closing_day) === targetInvoiceMonthStr) {
+        return dateStr;
+      }
+    }
+  }
+
+  // Fallback / "February Effect":
+  // If the above date does not map to targetInvoiceMonthStr,
+  // we use the 1st of the target invoice month
+  return `${targetInvoiceYear}-${String(targetInvoiceMonth).padStart(2, '0')}-01`;
+}
+
+/**
  * Recalculates and caches the summary of a specific month (YYYY-MM).
  * This function processes both physical transactions and reserves movements.
  * 
@@ -420,49 +507,94 @@ export const LocalStore = {
     }
 
     // Card check
+    let card = null;
     if (payment_method === 'credit_card') {
       if (!credit_card_id) {
         throw new Error('Um cartão de crédito deve ser fornecido para compras no crédito.');
       }
-      const card = dbData.credit_cards.find(c => c.id === credit_card_id);
+      card = dbData.credit_cards.find(c => c.id === credit_card_id);
       if (!card) {
         throw new Error('O cartão de crédito fornecido não existe.');
       }
     }
 
-    const id = `tx-${crypto.randomUUID()}`;
+    const installmentsCount = (payment_method === 'credit_card' && txData.installments) ? parseInt(txData.installments) : 1;
 
-    const tx = {
-      id,
-      date,
-      description: description.trim(),
-      amount: parseFloat(parsedAmount.toFixed(2)),
-      type: normalizedType,
-      category_id,
-      payment_method,
-      credit_card_id: payment_method === 'credit_card' ? credit_card_id : null,
-      installment: txData.installment || { current: 1, total: 1 },
-      recurring: txData.recurring || false,
-      notes: (notes || '').trim(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+    if (payment_method === 'credit_card' && installmentsCount > 1) {
+      const splitAmounts = _splitAmount(parsedAmount, installmentsCount);
+      const installmentGroupId = `inst-${crypto.randomUUID()}`;
+      const monthsToRecalculate = new Set();
+      let firstTx = null;
 
-    dbData.transactions.push(tx);
+      for (let i = 1; i <= installmentsCount; i++) {
+        const instAmount = splitAmounts[i - 1];
+        const instDate = _calculateInstallmentDate(date, card, i - 1);
+        const instDescription = `${description.trim()} (${i}/${installmentsCount})`;
+        const instId = `tx-${crypto.randomUUID()}`;
 
-    // Update summaries
-    let monthToRecalculate = date.substring(0, 7);
-    if (tx.payment_method === 'credit_card' && tx.credit_card_id) {
-      const card = dbData.credit_cards.find(c => c.id === tx.credit_card_id);
-      if (card) {
-        monthToRecalculate = _getCardInvoiceMonth(tx.date, card.closing_day);
+        const instTx = {
+          id: instId,
+          date: instDate,
+          description: instDescription,
+          amount: parseFloat(instAmount.toFixed(2)),
+          type: normalizedType,
+          category_id,
+          payment_method,
+          credit_card_id,
+          installment: { current: i, total: installmentsCount, group_id: installmentGroupId },
+          recurring: false,
+          notes: (notes || '').trim(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        dbData.transactions.push(instTx);
+        if (i === 1) {
+          firstTx = instTx;
+        }
+
+        const monthToRecalc = _getCardInvoiceMonth(instDate, card.closing_day);
+        monthsToRecalculate.add(monthToRecalc);
       }
+
+      monthsToRecalculate.forEach(m => _recalculateMonth(dbData, m));
+      _writeRaw(dbData);
+
+      return firstTx;
+    } else {
+      const id = `tx-${crypto.randomUUID()}`;
+
+      const tx = {
+        id,
+        date,
+        description: description.trim(),
+        amount: parseFloat(parsedAmount.toFixed(2)),
+        type: normalizedType,
+        category_id,
+        payment_method,
+        credit_card_id: payment_method === 'credit_card' ? credit_card_id : null,
+        installment: txData.installment || { current: 1, total: 1 },
+        recurring: txData.recurring || false,
+        notes: (notes || '').trim(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      dbData.transactions.push(tx);
+
+      // Update summaries
+      let monthToRecalculate = date.substring(0, 7);
+      if (tx.payment_method === 'credit_card' && tx.credit_card_id) {
+        if (card) {
+          monthToRecalculate = _getCardInvoiceMonth(tx.date, card.closing_day);
+        }
+      }
+
+      _recalculateMonth(dbData, monthToRecalculate);
+      _writeRaw(dbData);
+
+      return tx;
     }
-
-    _recalculateMonth(dbData, monthToRecalculate);
-    _writeRaw(dbData);
-
-    return tx;
   },
 
   /**

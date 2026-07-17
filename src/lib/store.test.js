@@ -278,6 +278,137 @@ describe('LocalStore V3 Database Engine', () => {
     });
   });
 
+  describe('Credit Card Installments (Parcelamento)', () => {
+    let db;
+    beforeEach(() => {
+      db = LocalStore.initializeBlank();
+
+      // Seed credit cards
+      const dbData = LocalStore.exportDatabase();
+      dbData.credit_cards = [
+        {
+          id: 'card-nubank',
+          name: 'Nubank',
+          limit: 3000,
+          closing_day: 28,
+          due_day: 5,
+          active: true
+        },
+        {
+          id: 'card-itau',
+          name: 'Itaú',
+          limit: 5000,
+          closing_day: 10,
+          due_day: 17,
+          active: true
+        }
+      ];
+      localStorage.setItem('finjson_db', JSON.stringify(dbData));
+    });
+
+    it('should split total amount exactly and distribute remainder cents to first installments', () => {
+      const tx = LocalStore.addTransaction({
+        description: 'Supermercado',
+        amount: 100.00,
+        type: 'expense',
+        category_id: 'cat-fixas',
+        date: '2026-03-25',
+        payment_method: 'credit_card',
+        credit_card_id: 'card-nubank',
+        installments: 3
+      });
+
+      const transactions = LocalStore.getTransactions().sort((a, b) => a.date.localeCompare(b.date));
+      // Should have generated 3 installment transactions
+      expect(transactions.length).toBe(3);
+
+      // Verify amounts and descriptions
+      expect(transactions[0].amount).toBe(33.34);
+      expect(transactions[0].description).toBe('Supermercado (1/3)');
+      expect(transactions[0].installment.current).toBe(1);
+      expect(transactions[0].installment.total).toBe(3);
+
+      expect(transactions[1].amount).toBe(33.33);
+      expect(transactions[1].description).toBe('Supermercado (2/3)');
+      expect(transactions[1].installment.current).toBe(2);
+      expect(transactions[1].installment.total).toBe(3);
+
+      expect(transactions[2].amount).toBe(33.33);
+      expect(transactions[2].description).toBe('Supermercado (3/3)');
+      expect(transactions[2].installment.current).toBe(3);
+      expect(transactions[2].installment.total).toBe(3);
+
+      // Total sum must be exactly 100.00
+      const totalSum = transactions.reduce((sum, t) => sum + t.amount, 0);
+      expect(totalSum).toBe(100.00);
+    });
+
+    it('should calculate installment dates correctly based on card closing cycle', () => {
+      // Itaú closes on day 10. Purchase on 2026-07-15 -> first installment goes to 2026-08 invoice
+      const tx = LocalStore.addTransaction({
+        description: 'Sofá',
+        amount: 300.00,
+        type: 'expense',
+        category_id: 'cat-fixas',
+        date: '2026-07-15',
+        payment_method: 'credit_card',
+        credit_card_id: 'card-itau',
+        installments: 3
+      });
+
+      const transactions = LocalStore.getTransactions().sort((a, b) => a.date.localeCompare(b.date));
+      expect(transactions.length).toBe(3);
+
+      // Verify dates
+      expect(transactions[0].date).toBe('2026-07-15'); // Belonging to invoice 2026-08
+      expect(transactions[1].date).toBe('2026-08-15'); // Belonging to invoice 2026-09
+      expect(transactions[2].date).toBe('2026-09-15'); // Belonging to invoice 2026-10
+
+      // Verify invoice assignment month-by-month
+      const invoiceAug = LocalStore.resolveCreditCardInvoice('card-itau', '2026-08');
+      expect(invoiceAug.length).toBe(1);
+      expect(invoiceAug[0].installment.current).toBe(1);
+
+      const invoiceSept = LocalStore.resolveCreditCardInvoice('card-itau', '2026-09');
+      expect(invoiceSept.length).toBe(1);
+      expect(invoiceSept[0].installment.current).toBe(2);
+
+      const invoiceOct = LocalStore.resolveCreditCardInvoice('card-itau', '2026-10');
+      expect(invoiceOct.length).toBe(1);
+      expect(invoiceOct[0].installment.current).toBe(3);
+    });
+
+    it('should correct dates to prevent installment double-billing in short months like February', () => {
+      // Nubank closes on day 28. Purchase on 2026-01-31 (closes on day 28) -> goes to 2026-02 invoice
+      const tx = LocalStore.addTransaction({
+        description: 'Curso',
+        amount: 200.00,
+        type: 'expense',
+        category_id: 'cat-fixas',
+        date: '2026-01-31',
+        payment_method: 'credit_card',
+        credit_card_id: 'card-nubank',
+        installments: 2
+      });
+
+      const transactions = LocalStore.getTransactions().sort((a, b) => a.date.localeCompare(b.date));
+      expect(transactions.length).toBe(2);
+
+      // Parcela 1: 2026-01-31 -> belongs to 2026-02 invoice
+      expect(transactions[0].date).toBe('2026-01-31');
+      const invoiceFeb = LocalStore.resolveCreditCardInvoice('card-nubank', '2026-02');
+      expect(invoiceFeb.length).toBe(1);
+      expect(invoiceFeb[0].installment.current).toBe(1);
+
+      // Parcela 2: Naively would be 2026-02-28, but 2026-02-28 belongs to 2026-02 invoice.
+      // So date is corrected to 2026-03-01 so it falls in the target 2026-03 invoice.
+      expect(transactions[1].date).toBe('2026-03-01');
+      const invoiceMarch = LocalStore.resolveCreditCardInvoice('card-nubank', '2026-03');
+      expect(invoiceMarch.length).toBe(1);
+      expect(invoiceMarch[0].installment.current).toBe(2);
+    });
+  });
+
   describe('Financial Reserves & Goal Progress', () => {
     beforeEach(() => {
       LocalStore.initializeBlank();
