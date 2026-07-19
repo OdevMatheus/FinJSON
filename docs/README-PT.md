@@ -140,3 +140,6 @@ Este projeto é open-source e livre para fins de estudo, organização financeir
 *Desenvolvido com excelência técnica em uma colaboração Humano-Agente.* 🚀
 
 </div>
+
+### 3.5. Controle de Retroatividade de Recorrências
+Lançamentos recorrentes possuem o campo opcional `start_month` (padrão: mês corrente). O motor de banco de dados (`store.js`) garante que transações recorrentes automáticas não serão geradas retroativamente para meses anteriores ao `start_month`.
