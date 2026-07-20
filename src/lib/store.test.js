@@ -754,7 +754,8 @@ describe('LocalStore V3 Database Engine', () => {
         type: 'income',
         category_id: 'cat-renda-salario',
         day: 1,
-        payment_method: 'pix'
+        payment_method: 'pix',
+        start_month: '2026-01'
       });
 
       LocalStore.addRecurringTransaction({
@@ -763,7 +764,8 @@ describe('LocalStore V3 Database Engine', () => {
         type: 'expense',
         category_id: 'cat-pessoal',
         day: 5,
-        payment_method: 'debit'
+        payment_method: 'debit',
+        start_month: '2026-01'
       });
 
       // 2. View/Recalculate summary of a specific month
@@ -809,7 +811,8 @@ describe('LocalStore V3 Database Engine', () => {
         category_id: 'cat-alimento',
         day: 15,
         payment_method: 'credit_card',
-        credit_card_id: card.id
+        credit_card_id: card.id,
+        start_month: '2026-01'
       });
 
       // 3. Add recurring bill on credit card with day > closing_day (day 30)
@@ -821,7 +824,8 @@ describe('LocalStore V3 Database Engine', () => {
         category_id: 'cat-lazer',
         day: 30,
         payment_method: 'credit_card',
-        credit_card_id: card.id
+        credit_card_id: card.id,
+        start_month: '2026-01'
       });
 
       // 4. Access summary of "2026-07" to trigger processing
@@ -847,7 +851,8 @@ describe('LocalStore V3 Database Engine', () => {
         type: 'expense',
         category_id: 'cat-lazer',
         day: 12,
-        payment_method: 'pix'
+        payment_method: 'pix',
+        start_month: '2026-01'
       });
 
       // 2. Access month to generate the transaction
