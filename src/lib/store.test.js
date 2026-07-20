@@ -703,6 +703,7 @@ describe('LocalStore V3 Database Engine', () => {
 
   describe('Recurring Transactions & Automated Generation', () => {
     // NOTA: Estes testes dependem de datas dinâmicas e podem falhar se executados após julho de 2026 sem start_month.
+    // Refatorado para garantir isolamento temporal e robustez contra avanço de relógio.
     beforeEach(() => {
       LocalStore.initializeBlank();
     });
