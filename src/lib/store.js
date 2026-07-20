@@ -1028,6 +1028,7 @@ export const LocalStore = {
       payment_method,
       credit_card_id: payment_method === 'credit_card' ? credit_card_id : null,
       active: true,
+      // Garante que o start_month padrão seja o mês atual do sistema de forma segura
       start_month: recData.start_month || new Date().toISOString().substring(0, 7),
       generated_months: []
     };
