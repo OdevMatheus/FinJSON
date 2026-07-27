@@ -1524,7 +1524,10 @@ function createRecurringView() {
             <td style="font-weight: 600;">Dia ${rec.day}</td>
             <td>
                 <div style="font-weight: 600; color: var(--text-white);">${escapeHTML(rec.description)}</div>
-                <div style="margin-top: 4px;">${typeBadge}</div>
+                <div style="margin-top: 4px; display: flex; gap: 4px; align-items: center;">
+                  ${typeBadge}
+                  <span class="recurring-start-month-tag" style="font-size: 10px; color: var(--text-muted);">Início: ${escapeHTML(rec.start_month || '')}</span>
+                </div>
             </td>
             <td>
                 <div class="category-badge-container">
