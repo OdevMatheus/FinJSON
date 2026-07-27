@@ -1226,3 +1226,12 @@ body {
     border-color: var(--primary-color) !important;
     box-shadow: 0 0 0 2px var(--primary-light);
 }
+
+
+/* Estilos para badges e tags de recorrência */
+.recurring-start-month-tag {
+  background-color: var(--bg-input);
+  padding: 1px 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
