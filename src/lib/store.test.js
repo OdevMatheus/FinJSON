@@ -898,6 +898,21 @@ describe('LocalStore V3 Database Engine', () => {
       expect(activeTxs.length).toBe(1);
     });
 
+    it('should handle leap year recurrence edge cases on day 29', () => {
+      // Adiciona recorrência em ano bissexto para testar comportamento de dias limites
+      LocalStore.addRecurringTransaction({
+        description: 'Assinatura Anual Bissexto',
+        amount: 29.90,
+        type: 'expense',
+        category_id: 'cat-lazer',
+        day: 29,
+        payment_method: 'pix',
+        start_month: '2028-02'
+      });
+      const summary = LocalStore.getSummary('2028-02');
+      expect(summary.total_expenses).toBe(29.90);
+    });
+
     it('should handle short months correctly for credit cards with closing day near end of month (e.g. February)', () => {
       // Card has closing day on 28.
       const card = LocalStore.addCreditCard({
