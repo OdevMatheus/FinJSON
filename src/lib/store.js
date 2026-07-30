@@ -1130,6 +1130,7 @@ export const LocalStore = {
    * Process all active recurring configurations for a given yearMonth, generating missing entries.
    * @param {string} yearMonth - format YYYY-MM
    */
+  // Processa as recorrências ativas com base no ciclo de faturamento e retroatividade
   processRecurringTransactions(yearMonth) {
     const dbData = _readRaw();
     if (!dbData) return;
