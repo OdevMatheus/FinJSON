@@ -1241,3 +1241,10 @@ body {
 .tx-table tbody tr:hover {
   background-color: rgba(255, 255, 255, 0.02);
 }
+
+
+/* Cores semânticas adicionais para reutilização */
+:root {
+  --color-success-dim: rgba(16, 185, 129, 0.1);
+  --color-danger-dim: rgba(244, 63, 94, 0.1);
+}
