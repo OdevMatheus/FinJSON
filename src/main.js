@@ -1089,7 +1089,7 @@ function createTransactionFormView() {
     const method = methodSelect.value;
     const cardId = method === 'credit_card' ? cardSelect.value : null;
     const installmentsVal = container.querySelector('#tx-installments') ? parseInt(container.querySelector('#tx-installments').value) : 1;
-    const notesVal = container.querySelector('#tx-notes').value;
+    const notesVal = container.querySelector('#tx-notes').value.trim();
 
     try {
       if (isEditing) {
