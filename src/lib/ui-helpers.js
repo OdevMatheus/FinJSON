@@ -124,3 +124,12 @@ export function calculateInvoiceAndDueDate(dateStr, closingDay, dueDay) {
     dueDateStr: formattedDueDate
   };
 }
+
+
+/**
+ * Retorna os detalhes de um cartão de forma legível.
+ */
+export function getCardLabel(card) {
+  if (!card) return 'Cartão não encontrado';
+  return `${card.name} (Fecha dia ${card.closing_day})`;
+}
