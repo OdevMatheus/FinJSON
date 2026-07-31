@@ -143,3 +143,7 @@ Este projeto é open-source e livre para fins de estudo, organização financeir
 
 ### 3.5. Controle de Retroatividade de Recorrências
 Lançamentos recorrentes possuem o campo opcional `start_month` (padrão: mês corrente). O motor de banco de dados (`store.js`) garante que transações recorrentes automáticas não serão geradas retroativamente para meses anteriores ao `start_month`.
+
+
+### 3.6. Regras de Negócio: Lançamentos Recorrentes no Crédito
+Quando um lançamento recorrente é configurado para a modalidade "Cartão de Crédito", o sistema calcula a data de lançamento real do débito da fatura com base no dia de fechamento do cartão (`closing_day`). Se o dia agendado for maior que o fechamento, o valor será faturado na competência seguinte.
