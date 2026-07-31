@@ -871,6 +871,20 @@ describe('LocalStore V3 Database Engine', () => {
       expect(txs2.length).toBe(0);
     });
 
+    it('should prevent future configs from generating past entries completely', () => {
+      LocalStore.addRecurringTransaction({
+        description: 'Serviço Futuro',
+        amount: 50.00,
+        type: 'expense',
+        category_id: 'cat-fixas',
+        day: 15,
+        payment_method: 'pix',
+        start_month: '2026-09'
+      });
+      const summary = LocalStore.getSummary('2026-08');
+      expect(summary.total_expenses).toBe(0.00);
+    });
+
     it('should enforce start_month and prevent retroactivity', () => {
       // Add a recurring config starting in 2026-07
       LocalStore.addRecurringTransaction({
