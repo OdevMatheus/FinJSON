@@ -140,3 +140,6 @@ This project is open-source and free for educational study, personal finance pla
 *Engineered with technical excellence in a collaborative Human-Agent session.* 🚀
 
 </div>
+
+## Credit Card Recurring Logic
+For any recurring item assigned to a credit card, Finjson evaluates if the scheduled billing day falls before or after the card's `closing_day` to assign the transaction to the correct invoice month.
