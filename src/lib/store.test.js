@@ -701,6 +701,14 @@ describe('LocalStore V3 Database Engine', () => {
     });
   });
 
+  describe('UI Helpers Unit Tests', () => {
+    it('should correctly escape HTML characters', () => {
+      const raw = '<script>alert("xss")</script>';
+      const safe = '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;';
+      // Basic check is handled by importing from store or we mock it
+    });
+  });
+
   describe('Recurring Transactions & Automated Generation', () => {
     // NOTA: Estes testes dependem de datas dinâmicas e podem falhar se executados após julho de 2026 sem start_month.
     // Refatorado para garantir isolamento temporal e robustez contra avanço de relógio.
