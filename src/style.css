@@ -1235,3 +1235,9 @@ body {
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
 }
+
+
+/* Melhora estados de hover da tabela de recorrências */
+.tx-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
