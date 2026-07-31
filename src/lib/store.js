@@ -15,6 +15,7 @@ const STORAGE_KEY = 'finjson_db';
  * @private
  * @returns {Object|null}
  */
+// Lê o banco de dados do LocalStorage de forma segura e com tratamento de cache básico
 function _readRaw() {
   let raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) {
