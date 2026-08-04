@@ -507,6 +507,11 @@ export const LocalStore = {
       throw new Error('A categoria fornecida não existe.');
     }
 
+    // Estende a validação da categoria também para regras recorrentes se necessário
+    if (!category_id) {
+      throw new Error('A categoria é obrigatória.');
+    }
+
     // Card check
     let card = null;
     if (payment_method === 'credit_card') {
