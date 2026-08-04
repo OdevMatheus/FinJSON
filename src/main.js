@@ -1501,7 +1501,8 @@ function createRecurringView() {
     `;
   } else {
     recurrences.forEach(rec => {
-      const cat = categories.find(c => c.id === rec.category_id) || { name: 'Outros', color: '#9ca3af' };
+      // Mapeia ícones e cores das categorias cadastradas
+       const cat = categories.find(c => c.id === rec.category_id) || { name: 'Outros', color: '#9ca3af' };
       
       let paymentText = '';
       if (rec.payment_method === 'credit_card') {
