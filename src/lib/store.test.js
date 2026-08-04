@@ -750,6 +750,18 @@ describe('LocalStore V3 Database Engine', () => {
       expect(updated.amount).toBe(59.90);
       expect(updated.day).toBe(15);
 
+      // Verificação de erro para categoria inválida
+      expect(() => {
+        LocalStore.addRecurringTransaction({
+          description: 'Invalido',
+          amount: 10.00,
+          type: 'expense',
+          category_id: 'cat-nao-existe',
+          day: 10,
+          payment_method: 'pix'
+        });
+      }).toThrow();
+
       // Delete
       const deleted = LocalStore.deleteRecurringTransaction(rec.id);
       expect(deleted).toBe(true);
