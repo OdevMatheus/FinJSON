@@ -682,6 +682,15 @@ describe('LocalStore V3 Database Engine', () => {
       const initialCards = LocalStore.getCreditCards();
       expect(initialCards.length).toBe(0); // Clean sheet starts empty
 
+      expect(() => {
+        LocalStore.addCreditCard({
+          name: 'Erro Card',
+          limit: 1000.00,
+          closing_day: 0,
+          due_day: 32
+        });
+      }).toThrow();
+
       const card = LocalStore.addCreditCard({
         name: 'Visa Infinite',
         limit: 10000.00,
