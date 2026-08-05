@@ -943,7 +943,7 @@ export const LocalStore = {
 
     const cDay = parseInt(closing_day);
     const dDay = parseInt(due_day);
-    if (cDay < 1 || cDay > 31 || dDay < 1 || dDay > 31) {
+    if (isNaN(cDay) || isNaN(dDay) || cDay < 1 || cDay > 31 || dDay < 1 || dDay > 31) {
       throw new Error('Os dias de fechamento e vencimento devem ser entre 1 e 31.');
     }
 
