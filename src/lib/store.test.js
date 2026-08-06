@@ -824,6 +824,27 @@ describe('LocalStore V3 Database Engine', () => {
       expect(t2.type).toBe('expense');
     });
 
+    it('should generate correct dates under alternative credit card closing rules', () => {
+      const card = LocalStore.addCreditCard({
+        name: 'Inter',
+        limit: 5000.00,
+        closing_day: 10,
+        due_day: 20
+      });
+      LocalStore.addRecurringTransaction({
+        description: 'Netflix Inter',
+        amount: 55.90,
+        type: 'expense',
+        category_id: 'cat-lazer',
+        day: 15,
+        payment_method: 'credit_card',
+        credit_card_id: card.id,
+        start_month: '2026-07'
+      });
+      const summary = LocalStore.getSummary('2026-08');
+      expect(summary.total_expenses).toBe(55.90);
+    });
+
     it('should generate correct transaction dates for credit card payments according to closing cycle', () => {
       // 1. Add Nubank credit card with closing on 28 and due on 5
       const card = LocalStore.addCreditCard({
