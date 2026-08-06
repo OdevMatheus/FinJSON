@@ -1248,3 +1248,12 @@ body {
   --color-success-dim: rgba(16, 185, 129, 0.1);
   --color-danger-dim: rgba(244, 63, 94, 0.1);
 }
+
+
+/* Banner de aviso de fatura de cartão */
+.invoice-warning-banner {
+  border-left: 4px solid var(--accent-info);
+  padding: 8px 12px;
+  background-color: var(--bg-input);
+  margin-top: 8px;
+}
