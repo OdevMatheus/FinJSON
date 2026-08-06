@@ -1609,6 +1609,7 @@ function createRecurringView() {
                             <option value="credit_card">Cartão de Crédito</option>
                         </select>
                     </div>
+                    <!-- Alerta de faturamento dinâmico com base no fechamento do cartão de crédito -->
                     <!-- Conditional Card Selector -->
                     <div class="form-field" id="rec-card-wrapper" style="display: none;">
                         <label for="rec-card">Qual Cartão de Crédito? *</label>
