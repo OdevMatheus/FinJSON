@@ -147,3 +147,7 @@ Lançamentos recorrentes possuem o campo opcional `start_month` (padrão: mês c
 
 ### 3.6. Regras de Negócio: Lançamentos Recorrentes no Crédito
 Quando um lançamento recorrente é configurado para a modalidade "Cartão de Crédito", o sistema calcula a data de lançamento real do débito da fatura com base no dia de fechamento do cartão (`closing_day`). Se o dia agendado for maior que o fechamento, o valor será faturado na competência seguinte.
+
+
+### 3.7. Decisão de Arquitetura (ADR): Cálculo Dinâmico de Fatura
+Faturas de cartão de crédito fecham no `closing_day`. Qualquer transação efetuada até essa data pertence ao mês de faturamento corrente. Do contrário, ela é lançada na fatura do mês subsequente, com vencimento em `due_day` do segundo mês à frente.
