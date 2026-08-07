@@ -756,6 +756,7 @@ export const LocalStore = {
     }, 0);
 
     if (movement.type === 'withdraw' && currentBalance < movement.amount) {
+      // Garante que ignore_balance não afete de forma indevida retiradas
       throw new Error('Saldo insuficiente na reserva para realizar este resgate.');
     }
 
