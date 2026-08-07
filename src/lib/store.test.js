@@ -660,6 +660,18 @@ describe('LocalStore V3 Database Engine', () => {
       LocalStore.initializeBlank();
     });
 
+    it('should respect ignore_balance flag on reserve deposits', () => {
+      const rsv = LocalStore.addReserve({ name: 'Carro', goal_amount: 50000.00 });
+      LocalStore.addReserveMovement(rsv.id, {
+        amount: 1000.00,
+        type: 'deposit',
+        date: '2026-07-15',
+        ignore_balance: true
+      });
+      const summary = LocalStore.getSummary('2026-07');
+      expect(summary.saved).toBe(0.00); // Saved sum remains untouched
+    });
+
     it('should support manually adding a reserve goal and persistence', () => {
       const initialReserves = LocalStore.getReserves();
       expect(initialReserves.length).toBe(0); // Starts blank per previous requirement
