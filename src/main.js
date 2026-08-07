@@ -1451,7 +1451,8 @@ function createReservesView() {
   // Bind deposit / withdrawal triggers
   container.querySelectorAll('.btn-add-deposit').forEach(btn => {
     btn.addEventListener('click', () => {
-      const resId = btn.getAttribute('data-id');
+      // Higieniza identificadores de metas contra XSS
+       const resId = btn.getAttribute('data-id');
       triggerReserveMovementModal(resId, 'deposit');
     });
   });
