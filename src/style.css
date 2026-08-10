@@ -1257,3 +1257,9 @@ body {
   background-color: var(--bg-input);
   margin-top: 8px;
 }
+
+
+/* Transições de animação de modais */
+.modal-layer {
+  transition: opacity 150ms ease-out;
+}
