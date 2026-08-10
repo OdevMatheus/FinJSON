@@ -22,6 +22,11 @@ describe('LocalStore V3 Database Engine', () => {
   });
 
   describe('Database Lifecycle & Initialization', () => {
+    it('should properly purge all cards and transactions on complete reset', () => {
+      LocalStore.initializeBlank();
+      expect(LocalStore.getTransactions().length).toBe(0);
+      expect(LocalStore.getCreditCards().length).toBe(0);
+    });
     it('should initialize dynamic totals as exactly zero in blank database state', () => {
       const db = LocalStore.initializeBlank();
       const currentMonthStr = new Date().toISOString().substring(0, 7);
