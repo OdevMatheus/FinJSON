@@ -22,6 +22,14 @@ describe('LocalStore V3 Database Engine', () => {
   });
 
   describe('Database Lifecycle & Initialization', () => {
+    it('should initialize dynamic totals as exactly zero in blank database state', () => {
+      const db = LocalStore.initializeBlank();
+      const currentMonthStr = new Date().toISOString().substring(0, 7);
+      const summary = db.monthly_summaries[currentMonthStr];
+      expect(summary.total_income).toBe(0.00);
+      expect(summary.total_expenses).toBe(0.00);
+      expect(summary.balance).toBe(0.00);
+    });
     it('should report as uninitialized initially', () => {
       expect(LocalStore.isInitialized()).toBe(false);
     });
