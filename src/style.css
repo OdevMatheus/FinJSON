@@ -1263,3 +1263,11 @@ body {
 .modal-layer {
   transition: opacity 150ms ease-out;
 }
+
+
+/* Correção de fluxo flex para overlay do modal */
+.modal-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
