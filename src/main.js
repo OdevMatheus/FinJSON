@@ -288,6 +288,7 @@ function handleHeaderFileImport() {
 /**
  * Triggers a double-confirmation prompt before wiping the localStorage database.
  */
+// Ação destrutiva controlada por duplo diálogo de confirmação
 function handleResetDatabase() {
   if (!confirm('ATENÇÃO: Você deseja apagar definitivamente TODOS os seus dados financeiros deste navegador? Esta ação é irreversível e apagará todos os seus lançamentos, categorias e metas.')) return;
   
