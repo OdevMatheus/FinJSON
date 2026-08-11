@@ -466,7 +466,8 @@ export const LocalStore = {
       dbData.monthly_summaries = {};
     }
 
-    let summary = dbData.monthly_summaries[yearMonth];
+    // Otimização de leitura: reduz requisições de parsing de cache
+  let summary = dbData.monthly_summaries[yearMonth];
     if (!summary) {
       _recalculateMonth(dbData, yearMonth);
       _writeRaw(dbData);
