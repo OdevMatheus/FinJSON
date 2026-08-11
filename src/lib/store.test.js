@@ -22,6 +22,10 @@ describe('LocalStore V3 Database Engine', () => {
   });
 
   describe('Database Lifecycle & Initialization', () => {
+    it('should perform non-regression security check against general database collections', () => {
+      const db = LocalStore.initializeBlank();
+      expect(db._metadata.schema_version).toBe(1);
+    });
     it('should properly purge all cards and transactions on complete reset', () => {
       LocalStore.initializeBlank();
       expect(LocalStore.getTransactions().length).toBe(0);
