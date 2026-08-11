@@ -172,6 +172,7 @@ function _calculateInstallmentDate(purchaseDateStr, card, index) {
  * @param {Object} dbData - The raw db state
  * @param {string} yearMonth - Format "YYYY-MM"
  */
+// Recalcula totais líquidos utilizando agrupamentos em run-time do banco de dados
 function _recalculateMonth(dbData, yearMonth) {
   const transactions = dbData.transactions || [];
   const creditCards = dbData.credit_cards || [];
