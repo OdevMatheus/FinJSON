@@ -10,3 +10,4 @@
 2026-08-19 14:40:55 - Outlined starting databases with zero entries except base categories
 2026-08-19 15:30:21 - Documented Vite building commands and server configuration
 2026-08-19 16:55:10 - Added performance guidelines for synchronous RAM-based lookups
+2026-08-19 18:10:37 - Visualized folder scopes and individual module boundaries
