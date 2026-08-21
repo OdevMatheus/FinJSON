@@ -17,3 +17,4 @@
 2026-08-21 09:40:05 - Outlined verification scenarios for offline operation on dev build
 2026-08-21 11:15:33 - Described secure DOM writing to suppress potential XSS
 2026-08-21 12:50:12 - Re-enforced static layout invariants on dynamic hover triggers
+2026-08-21 14:10:47 - Added subdirectory-scoped guidelines specification mapping
