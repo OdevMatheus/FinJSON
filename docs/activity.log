@@ -44,3 +44,4 @@
 2026-08-30 11:10:33 - Documented SVG coordinate calculations for donut charts
 2026-08-30 12:45:51 - Outlined full-text indexing thresholds for transaction lookups
 2026-08-30 14:30:19 - Documented dynamic chunk division and code splitting bounds
+2026-08-30 15:55:04 - Documented printing styles and margins for custom PDF exports
