@@ -50,3 +50,4 @@
 2026-09-16 10:47:11 - Documented schema versioning rules for local JSON exports
 2026-09-16 15:39:05 - Optimized category lookup map during monthly aggregation
 2026-09-16 17:49:52 - Added unit assertions for leap-year billing cycle boundaries
+2026-09-18 09:11:46 - Refined focus-visible ring contrast on dark surface cards
