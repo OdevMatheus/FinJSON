@@ -52,3 +52,4 @@
 2026-09-16 17:49:52 - Added unit assertions for leap-year billing cycle boundaries
 2026-09-18 09:11:46 - Refined focus-visible ring contrast on dark surface cards
 2026-09-18 11:11:45 - Added keyboard shortcut hints to transaction modal actions
+2026-09-18 14:00:28 - Prevented negative reserve total when withdrawal equals balance
