@@ -54,3 +54,4 @@
 2026-09-18 11:11:45 - Added keyboard shortcut hints to transaction modal actions
 2026-09-18 14:00:28 - Prevented negative reserve total when withdrawal equals balance
 2026-09-18 16:51:51 - Updated performance notes on synchronous localStorage writes
+2026-09-18 19:27:41 - Memoized active credit card list filtering per view render
