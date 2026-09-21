@@ -59,3 +59,4 @@
 2026-09-19 20:24:13 - Adjusted tabular-nums alignment on monthly summary badges
 2026-09-21 08:52:12 - Clarified fallback behavior for corrupted localStorage payloads
 2026-09-21 12:25:08 - Extracted currency input formatting helper into pure function
+2026-09-21 14:47:38 - Verified credit card invoice rollover on day 31 purchases
