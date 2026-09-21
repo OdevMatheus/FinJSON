@@ -60,3 +60,4 @@
 2026-09-21 08:52:12 - Clarified fallback behavior for corrupted localStorage payloads
 2026-09-21 12:25:08 - Extracted currency input formatting helper into pure function
 2026-09-21 14:47:38 - Verified credit card invoice rollover on day 31 purchases
+2026-09-21 19:32:46 - Ensured modal backdrop click closes active dropdown menus
