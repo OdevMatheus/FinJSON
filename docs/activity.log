@@ -62,3 +62,4 @@
 2026-09-21 14:47:38 - Verified credit card invoice rollover on day 31 purchases
 2026-09-21 19:32:46 - Ensured modal backdrop click closes active dropdown menus
 2026-09-22 11:41:37 - Expanded architectural notes on zero-backend data privacy
+2026-09-22 17:59:47 - Supported optional notes metadata in reserve deposit records
