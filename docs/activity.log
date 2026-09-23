@@ -65,3 +65,4 @@
 2026-09-22 17:59:47 - Supported optional notes metadata in reserve deposit records
 2026-09-23 09:45:56 - Tightened vertical rhythm in compact transaction rows
 2026-09-23 11:24:55 - Validated HTML escaping on custom category labels with quotes
+2026-09-23 14:29:46 - Batched DOM fragment insertions when rendering transaction history
