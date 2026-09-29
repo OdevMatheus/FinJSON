@@ -76,3 +76,4 @@
 2026-09-29 13:15:12 - Highlighted approaching credit card closing dates in selector
 2026-09-29 15:10:27 - Normalized date string parsing across negative UTC offsets
 2026-09-29 17:39:11 - Asserted deterministic UUID prefix formatting on new reserves
+2026-09-29 19:08:25 - Documented recovery steps for manual JSON backup edits
