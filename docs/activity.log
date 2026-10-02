@@ -81,3 +81,4 @@
 2026-09-30 15:18:28 - Avoided redundant JSON serialization on no-op state updates
 2026-09-30 18:25:38 - Improved responsive wrapping of summary cards on narrow viewports
 2026-10-01 15:48:06 - Added checklist for accessibility aria-label audits on icon controls
+2026-10-02 10:40:35 - Verified clean-slate reset preserves default structural categories
