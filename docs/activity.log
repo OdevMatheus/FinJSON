@@ -83,3 +83,4 @@
 2026-10-01 15:48:06 - Added checklist for accessibility aria-label audits on icon controls
 2026-10-02 10:40:35 - Verified clean-slate reset preserves default structural categories
 2026-10-02 13:20:33 - Prevented double form submission on rapid enter key presses
+2026-10-02 15:53:52 - Standardized error messages on invalid import schemas
