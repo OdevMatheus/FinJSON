@@ -85,3 +85,4 @@
 2026-10-02 13:20:33 - Prevented double form submission on rapid enter key presses
 2026-10-02 15:53:52 - Standardized error messages on invalid import schemas
 2026-10-02 20:07:41 - Outlined best practices for portable JSON archive naming
+2026-10-05 11:07:20 - Polished empty-state illustration spacing in reserves tab
