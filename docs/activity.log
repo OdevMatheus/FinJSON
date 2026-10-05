@@ -86,3 +86,4 @@
 2026-10-02 15:53:52 - Standardized error messages on invalid import schemas
 2026-10-02 20:07:41 - Outlined best practices for portable JSON archive naming
 2026-10-05 11:07:20 - Polished empty-state illustration spacing in reserves tab
+2026-10-05 16:12:52 - Added helper to compute utilization ratio per credit card
