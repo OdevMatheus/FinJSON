@@ -92,3 +92,4 @@
 2026-10-07 11:39:20 - Debounced search filter input on large transaction lists
 2026-10-07 12:10:40 - Handled floating-point rounding in multi-installment splits
 2026-10-07 14:28:46 - Added regression test for cent-level installment remainder allocation
+2026-10-07 16:22:55 - Refined border contrast on active navigation tab indicator
