@@ -96,3 +96,4 @@
 2026-10-07 18:01:58 - Documented installment remainder allocation rules in store engine
 2026-10-07 19:46:38 - Consolidated confirmation dialog handlers into single module
 2026-10-08 09:53:49 - Updated local development preview port documentation
+2026-10-08 16:39:47 - Displayed net savings percentage indicator on monthly card
