@@ -100,3 +100,4 @@
 2026-10-09 08:58:35 - Aligned tooltip arrow position on right-aligned header buttons
 2026-10-09 13:08:17 - Verified monthly summary recalculation after deleting credit card
 2026-10-09 14:47:11 - Clarified cascade deletion behavior for linked card transactions
+2026-10-09 19:57:56 - Implemented single-pass partition for income and expense totals
