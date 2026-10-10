@@ -101,3 +101,4 @@
 2026-10-09 13:08:17 - Verified monthly summary recalculation after deleting credit card
 2026-10-09 14:47:11 - Clarified cascade deletion behavior for linked card transactions
 2026-10-09 19:57:56 - Implemented single-pass partition for income and expense totals
+2026-10-10 19:51:09 - Adjusted badge font weight for readability on dark slate backgrounds
