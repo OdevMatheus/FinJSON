@@ -103,3 +103,4 @@
 2026-10-09 19:57:56 - Implemented single-pass partition for income and expense totals
 2026-10-10 19:51:09 - Adjusted badge font weight for readability on dark slate backgrounds
 2026-10-13 10:02:29 - Tightened type guards on imported transaction amounts
+2026-10-13 12:01:25 - Rejected non-finite numbers during JSON database import validation
