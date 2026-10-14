@@ -107,3 +107,4 @@
 2026-10-13 15:28:15 - Updated data integrity section with import validation rules
 2026-10-13 16:04:45 - Restored keyboard focus to trigger button after modal close
 2026-10-13 20:15:06 - Standardized scrollbar thumb border-radius across panels
+2026-10-14 11:51:32 - Added quick-filter toggle for credit-only transactions
