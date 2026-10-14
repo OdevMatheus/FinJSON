@@ -109,3 +109,4 @@
 2026-10-13 20:15:06 - Standardized scrollbar thumb border-radius across panels
 2026-10-14 11:51:32 - Added quick-filter toggle for credit-only transactions
 2026-10-14 13:37:40 - Asserted quick-filter state persistence across month navigation
+2026-10-14 19:52:07 - Documented UI filter state lifecycle during month transitions
