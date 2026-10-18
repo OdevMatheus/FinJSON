@@ -118,3 +118,4 @@
 2026-10-16 20:27:43 - Added subtle color transition on reserve progress bar completion
 2026-10-18 11:43:42 - Verified package lockless build reproducibility on Node 20+
 2026-10-18 14:45:57 - Showed remaining target amount in reserve card subtitle
+2026-10-18 16:46:52 - Clamped reserve progress bar width to 100% when goal exceeded
