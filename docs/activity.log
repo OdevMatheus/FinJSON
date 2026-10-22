@@ -127,3 +127,4 @@
 2026-10-20 18:22:56 - Ran full suite sanity check on store state mutations
 2026-10-21 12:44:37 - Finalized October maintenance log and architecture review notes
 2026-10-22 08:38:04 - Guarded against empty category ID when importing legacy JSON
+2026-10-22 09:10:34 - Cached formatted currency strings for unchanged transaction rows
